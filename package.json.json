@@ -1,0 +1,19 @@
+{
+  "name": "datalite-microsaas",
+  "version": "1.0.0",
+  "description": "MicroSaaS simplificado de visualización de datos y tablas dinámicas para Vercel",
+  "private": true,
+  "scripts": {
+    "build": "echo 'Proyecto estático sin compilación previa'",
+    "start": "serve ."
+  },
+  "keywords": [
+    "excel",
+    "csv",
+    "dashboard",
+    "pivot-table",
+    "vercel",
+    "microsaas"
+  ],
+  "author": "jgcohen"
+}

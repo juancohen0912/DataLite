@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DataLite - Visualizador Simplificado de Datos</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- SheetJS (Lector XLSX / CSV) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <!-- PptxGenJS (Exportación PPTX) -->
+  <script src="https://cdn.jsdelivr.net/gh/gitbrent/pptxgenjs@3.12.0/dist/pptxgen.bundle.js"></script>
+  <!-- html2pdf.js (Exportación PDF) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+  <!-- React 18 & Babel -->
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+</head>
+<body class="bg-slate-100 text-slate-800 font-sans min-h-screen flex flex-col">
+  <div id="root" class="flex-1 flex flex-col"></div>
+
+  <script type="text/babel">
+    const { useState, useEffect, useRef, useMemo } = React;
+
+    // Paleta de colores optimizada
+    const COLOR_PALETTE = [
+      '#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', 
+      '#EC4899', '#14B8A6', '#6366F1', '#84CC16', '#06B6D4',
+      '#F97316', '#D946EF', '#64748B', '#A855F7', '#0EA5E9'
+    ];
+
+    // Limpieza de números
+    const parseNumber = (val) => {
+      if (typeof val === 'number') return isNaN(val) ? 0 : val;
+      if (!val) return 0;
+      const str = String(val).replace(/[^0-9.-]+/g, "");
+      const num = parseFloat(str);
+      return isNaN(num) ? 0 : num;
+    };
+
+    function App() {
+      const [data, setData] = useState([]);
+      const [columns, setColumns] = useState([]);
+      const [selectedGroup, setSelectedGroup] = useState('');
+      const [selectedMetric, setSelectedMetric] = useState('');
+      const [aggType, setAggType] = useState('SUM');
+      const [chartType, setChartType] = useState('pie');
+      const [topN, setTopN] = useState('10');
+      const [searchTerm, setSearchTerm] = useState('');
+
+      const chartRef = useRef(null);
+      const chartInstance = useRef(null);
+
+      // Carga y procesamiento del archivo
+      const handleFileUpload = (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = (evt) => {
+          const bstr = evt.target.result;
+          const workbook = XLSX.read(bstr, { type: 'binary' });
+          const wsname = workbook.SheetNames[0];
+          const ws = workbook.Sheets[wsname];
+          const parsedData = XLSX.utils.sheet_to_json(ws, { defval: "" });
+
+          if (parsedData.length > 0) {
+            const cols = Object.keys(parsedData[0]);
+            setColumns(cols);
+            setData(parsedData);
+
+            // Detección automática inteligente
+            const colStats = cols.map(col => {
+              const uniqueVals = new Set(parsedData.map(r => r[col])).size;
+              const isNum = parsedData.some(r => typeof r[col] === 'number' || !isNaN(parseFloat(r[col])));
+              return { col, uniqueVals, isNum };
+            });
+
+            const bestGroup = colStats.find(c => c.uniqueVals >= 2 && c.uniqueVals <= 50) || colStats[0];
+            const bestMetric = colStats.find(c => c.isNum && c.uniqueVals > 5 && c.col !== bestGroup.col) || colStats[cols.length - 1];
+
+            setSelectedGroup(bestGroup.col);
+            setSelectedMetric(bestMetric.col);
+          }
+        };
+        reader.readAsBinaryString(file);
+      };
+
+      // Cálculo de tabla dinámica
+      const fullPivotData = useMemo(() => {
+        if (!data.length || !selectedGroup || !selectedMetric) return [];
+
+        const grouped = {};
+        data.forEach(row => {
+          const key = String(row[selectedGroup] ?? 'Sin Categoría').trim() || 'Sin Categoría';
+          const val = parseNumber(row[selectedMetric]);
+
+          if (!grouped[key]) {
+            grouped[key] = { sum: 0, count: 0 };
+          }
+          grouped[key].sum += val;
+          grouped[key].count += 1;
+        });
+
+        return Object.keys(grouped).map(key => {
+          let value = grouped[key].sum;
+          if (aggType === 'COUNT') value = grouped[key].count;
+          if (aggType === 'AVG') value = grouped[key].sum / (grouped[key].count || 1);
+          return { group: key, value: Number(value.toFixed(2)) };
+        }).sort((a, b) => b.value - a.value);
+      }, [data, selectedGroup, selectedMetric, aggType]);
+
+      // Filtrado Top N + "Otros" para gráficos
+      const chartData = useMemo(() => {
+        if (!fullPivotData.length) return [];
+        if (topN === 'ALL' || fullPivotData.length <= parseInt(topN)) {
+          return fullPivotData;
+        }
+
+        const limit = parseInt(topN);
+        const topItems = fullPivotData.slice(0, limit);
+        const otherItems = fullPivotData.slice(limit);
+        const otherSum = otherItems.reduce((acc, curr) => acc + curr.value, 0);
+
+        return [
+          ...topItems,
+          { group: `Otros (${otherItems.length} cat.)`, value: Number(otherSum.toFixed(2)) }
+        ];
+      }, [fullPivotData, topN]);
+
+      // Renderizado de gráficos con Chart.js
+      useEffect(() => {
+        if (!chartData.length || !chartRef.current) return;
+
+        if (chartInstance.current) {
+          chartInstance.current.destroy();
+        }
+
+        const ctx = chartRef.current.getContext('2d');
+        const isPieOrDoughnut = ['pie', 'doughnut'].includes(chartType);
+        const isHorizontal = chartType === 'horizontalBar';
+        const actualChartType = isHorizontal ? 'bar' : (chartType === 'area' ? 'line' : chartType);
+
+        chartInstance.current = new Chart(ctx, {
+          type: actualChartType,
+          data: {
+            labels: chartData.map(d => d.group),
+            datasets: [{
+              label: `${aggType} de ${selectedMetric}`,
+              data: chartData.map(d => d.value),
+              backgroundColor: isPieOrDoughnut 
+                ? COLOR_PALETTE.slice(0, chartData.length)
+                : 'rgba(59, 130, 246, 0.75)',
+              borderColor: isPieOrDoughnut ? '#ffffff' : '#2563EB',
+              borderWidth: 1.5,
+              fill: chartType === 'area'
+            }]
+          },
+          options: {
+            indexAxis: isHorizontal ? 'y' : 'x',
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: {
+                display: isPieOrDoughnut || chartData.length <= 10,
+                position: isPieOrDoughnut ? 'bottom' : 'top',
+                labels: { boxWidth: 12, font: { size: 11 } }
+              },
+              tooltip: {
+                callbacks: {
+                  label: (ctx) => ` ${ctx.dataset.label}: ${ctx.formattedValue}`
+                }
+              }
+            },
+            scales: isPieOrDoughnut ? {} : {
+              y: { beginAtZero: true, grid: { color: '#E2E8F0' } },
+              x: { grid: { display: false } }
+            }
+          }
+        });
+      }, [chartData, chartType, aggType, selectedMetric]);
+
+      // Filtro para búsqueda en tabla
+      const filteredPivotData = useMemo(() => {
+        return fullPivotData.filter(item => 
+          item.group.toLowerCase().includes(searchTerm.toLowerCase())
+        );
+      }, [fullPivotData, searchTerm]);
+
+      // Exportar PDF
+      const exportPDF = () => {
+        const element = document.getElementById('dashboard-view');
+        const opt = {
+          margin: 0.3,
+          filename: `Reporte_${selectedGroup}_vs_${selectedMetric}.pdf`,
+          image: { type: 'jpeg', quality: 0.98 },
+          html2canvas: { scale: 2, useCORS: true },
+          jsPDF: { unit: 'in', format: 'letter', orientation: 'landscape' }
+        };
+        html2pdf().set(opt).from(element).save();
+      };
+
+      // Exportar PPTX con gráfico
+      const exportPPTX = () => {
+        const pptx = new PptxGenJS();
+        const slide = pptx.addSlide();
+
+        slide.addText(`Análisis: ${selectedMetric} por ${selectedGroup}`, { x: 0.5, y: 0.4, fontSize: 18, bold: true, color: "1E293B" });
+
+        if (chartInstance.current) {
+          const chartImg = chartInstance.current.toBase64Image();
+          slide.addImage({ data: chartImg, x: 0.5, y: 1.0, w: 4.5, h: 4.0 });
+        }
+
+        const tableRows = [["Categoría", `${aggType} (${selectedMetric})`]];
+        chartData.forEach(item => tableRows.push([String(item.group), String(item.value.toLocaleString())]));
+
+        slide.addTable(tableRows, { x: 5.2, y: 1.0, w: 4.3, colW: [2.5, 1.8], fontSize: 10, border: { pt: "1", color: "CBD5E1" } });
+        pptx.writeFile({ fileName: `Reporte_${selectedGroup}.pptx` });
+      };
+
+      return (
+        <div className="flex-1 flex flex-col justify-between">
+          <div>
+            {/* Encabezado */}
+            <header className="bg-slate-900 text-white px-6 py-4 flex justify-between items-center shadow-md">
+              <div className="flex items-center gap-3">
+                <span className="bg-blue-600 text-white font-black text-xl px-3 py-1 rounded-lg">DL</span>
+                <div>
+                  <h1 className="text-xl font-bold tracking-tight">DataLite SaaS</h1>
+                  <p className="text-xs text-slate-400">Desplegado en Vercel | Visualización Ágil</p>
+                </div>
+              </div>
+              <a 
+                href="https://buymeacoffee.com/jgcohen" 
+                target="_blank" 
+                rel="noreferrer"
+                className="bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold px-4 py-2 rounded-lg text-sm transition flex items-center gap-2 shadow"
+              >
+                ☕ Apoyar a jgcohen
+              </a>
+            </header>
+
+            {/* Contenido Principal */}
+            <main className="p-6 max-w-7xl mx-auto w-full">
+              {data.length === 0 ? (
+                <div className="space-y-6 mt-4">
+                  {/* Zona de Carga */}
+                  <div className="border-2 border-dashed border-slate-300 rounded-2xl p-10 text-center bg-white shadow-sm">
+                    <div className="max-w-md mx-auto">
+                      <div className="w-16 h-16 bg-blue-50 text-blue-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                        </svg>
+                      </div>
+                      <h2 className="text-2xl font-bold mb-2 text-slate-800">Carga tu Excel o CSV</h2>
+                      <p className="text-slate-500 mb-6 text-sm">Visualiza métricas, construye tablas dinámicas y genera gráficos limpios automáticamente.</p>
+                      <input 
+                        type="file" 
+                        accept=".xlsx, .xls, .csv" 
+                        onChange={handleFileUpload} 
+                        className="block w-full text-sm text-slate-500 file:mr-4 file:py-2.5 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-600 file:text-white hover:file:bg-blue-700 cursor-pointer shadow-sm"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Nota sobre la calidad de los datos */}
+                  <div className="bg-amber-50 border-l-4 border-amber-500 p-4 rounded-r-xl shadow-sm text-amber-900 text-sm flex items-start gap-3 max-w-3xl mx-auto">
+                    <span className="text-lg">⚠️</span>
+                    <div>
+                      <h4 className="font-bold mb-0.5">Nota sobre la calidad de los datos</h4>
+                      <p className="text-amber-800 text-xs leading-relaxed">
+                        Para garantizar una correcta visualización y agregación en las tablas dinámicas, asegúrate de que la información cargada esté <strong>previamente limpia, revisada y sin registros nulos o erróneos</strong>. Encabezados claros e información consistente garantizan resultados óptimos.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div className="space-y-6">
+                  {/* Controles del Dashboard */}
+                  <div className="bg-white p-5 rounded-xl shadow-sm border border-slate-200 grid grid-cols-1 md:grid-cols-6 gap-4 items-end">
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-600 mb-1">Eje X / Agrupar por</label>
+                      <select value={selectedGroup} onChange={e => setSelectedGroup(e.target.value)} className="w-full border rounded-lg p-2 text-sm bg-slate-50 border-slate-300">
+                        {columns.map(col => <option key={col} value={col}>{col}</option>)}
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-600 mb-1">Métrica / Valor</label>
+                      <select value={selectedMetric} onChange={e => setSelectedMetric(e.target.value)} className="w-full border rounded-lg p-2 text-sm bg-slate-50 border-slate-300">
+                        {columns.map(col => <option key={col} value={col}>{col}</option>)}
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-600 mb-1">Operación</label>
+                      <select value={aggType} onChange={e => setAggType(e.target.value)} className="w-full border rounded-lg p-2 text-sm bg-slate-50 border-slate-300">
+                        <option value="SUM">Suma</option>
+                        <option value="COUNT">Conteo</option>
+                        <option value="AVG">Promedio</option>
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-600 mb-1">Tipo de Gráfico</label>
+                      <select value={chartType} onChange={e => setChartType(e.target.value)} className="w-full border rounded-lg p-2 text-sm bg-slate-50 border-slate-300">
+                        <option value="pie">Torta / Pie</option>
+                        <option value="doughnut">Dona / Doughnut</option>
+                        <option value="bar">Barras Verticales</option>
+                        <option value="horizontalBar">Barras Horizontales</option>
+                        <option value="line">Líneas</option>
+                        <option value="area">Área</option>
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-600 mb-1">Límite Gráfico</label>
+                      <select value={topN} onChange={e => setTopN(e.target.value)} className="w-full border rounded-lg p-2 text-sm bg-slate-50 border-slate-300">
+                        <option value="5">Top 5</option>
+                        <option value="10">Top 10</option>
+                        <option value="15">Top 15</option>
+                        <option value="ALL">Mostrar Todos</option>
+                      </select>
+                    </div>
+
+                    <div className="flex gap-2">
+                      <button onClick={exportPDF} className="flex-1 bg-red-600 hover:bg-red-700 text-white font-semibold py-2 rounded-lg text-sm transition shadow-sm">PDF</button>
+                      <button onClick={exportPPTX} className="flex-1 bg-orange-600 hover:bg-orange-700 text-white font-semibold py-2 rounded-lg text-sm transition shadow-sm">PPTX</button>
+                    </div>
+                  </div>
+
+                  {/* Notificación si supera 20 categorías */}
+                  {fullPivotData.length > 20 && topN !== 'ALL' && (
+                    <div className="bg-amber-50 border border-amber-200 text-amber-800 text-xs px-4 py-2.5 rounded-lg flex items-center justify-between">
+                      <span>💡 <strong>{selectedGroup}</strong> contiene {fullPivotData.length} categorías únicas. Se están agrupando en <strong>Top {topN} + Otros</strong> para preservar la legibilidad del gráfico.</span>
+                    </div>
+                  )}
+
+                  {/* Área Visor de Gráficos y Tablas */}
+                  <div id="dashboard-view" className="space-y-6 bg-slate-100 p-2 rounded-xl">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <div className="bg-white p-4 rounded-xl shadow-sm border border-slate-200">
+                        <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Total Registros</p>
+                        <p className="text-3xl font-extrabold text-slate-800 mt-1">{data.length.toLocaleString()}</p>
+                      </div>
+
+                      <div className="bg-white p-4 rounded-xl shadow-sm border border-slate-200">
+                        <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Categorías Únicas ({selectedGroup})</p>
+                        <p className="text-3xl font-extrabold text-blue-600 mt-1">{fullPivotData.length.toLocaleString()}</p>
+                      </div>
+
+                      <div className="bg-white p-4 rounded-xl shadow-sm border border-slate-200">
+                        <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Total {selectedMetric} ({aggType})</p>
+                        <p className="text-3xl font-extrabold text-emerald-600 mt-1">
+                          {fullPivotData.reduce((acc, curr) => acc + curr.value, 0).toLocaleString(undefined, { maximumFractionDigits: 2 })}
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                      <div className="bg-white p-5 rounded-xl shadow-sm border border-slate-200 flex flex-col h-[420px]">
+                        <div className="flex justify-between items-center mb-3">
+                          <h3 className="text-sm font-bold text-slate-700">Visualización Gráfica</h3>
+                          <span className="text-xs bg-slate-100 text-slate-600 font-medium px-2 py-1 rounded">
+                            {topN === 'ALL' ? 'Todos los registros' : `Top ${topN}`}
+                          </span>
+                        </div>
+                        <div className="flex-1 relative w-full h-full">
+                          <canvas ref={chartRef}></canvas>
+                        </div>
+                      </div>
+
+                      <div className="bg-white p-5 rounded-xl shadow-sm border border-slate-200 flex flex-col h-[420px]">
+                        <div className="flex justify-between items-center mb-3 gap-2">
+                          <h3 className="text-sm font-bold text-slate-700">Tabla Dinámica</h3>
+                          <input 
+                            type="text" 
+                            placeholder="Buscar categoría..." 
+                            value={searchTerm}
+                            onChange={e => setSearchTerm(e.target.value)}
+                            className="border border-slate-300 rounded-lg px-2.5 py-1 text-xs w-44 focus:outline-none focus:border-blue-500"
+                          />
+                        </div>
+
+                        <div className="overflow-y-auto flex-1 border rounded-lg border-slate-100">
+                          <table className="w-full text-left border-collapse text-sm">
+                            <thead className="sticky top-0 bg-slate-100 border-b border-slate-200">
+                              <tr>
+                                <th className="p-2.5 font-bold text-slate-600">{selectedGroup}</th>
+                                <th className="p-2.5 font-bold text-slate-600 text-right">{aggType} ({selectedMetric})</th>
+                              </tr>
+                            </thead>
+                            <tbody className="divide-y divide-slate-100">
+                              {filteredPivotData.map((row, idx) => (
+                                <tr key={idx} className="hover:bg-blue-50/50 transition">
+                                  <td className="p-2.5 text-slate-700 font-medium">{row.group}</td>
+                                  <td className="p-2.5 text-slate-900 font-bold text-right">{row.value.toLocaleString(undefined, { maximumFractionDigits: 2 })}</td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </main>
+          </div>
+
+          {/* Pie de Página con Exención de Responsabilidad Legal */}
+          <footer className="bg-slate-900 text-slate-400 py-6 px-6 mt-12 border-t border-slate-800 text-xs">
+            <div className="max-w-7xl mx-auto space-y-3 text-center md:text-left md:flex md:justify-between md:items-center md:space-y-0">
+              <div className="space-y-1 max-w-3xl">
+                <p className="font-semibold text-slate-300">DataLite SaaS - Alojado en Vercel Edge Network</p>
+                <p className="text-slate-400 leading-relaxed text-[11px]">
+                  <strong>Exención de responsabilidad del autor:</strong> Esta plataforma realiza el procesamiento y análisis de datos de forma 100% local en el dispositivo del usuario (*client-side*). El autor (<strong>jgcohen</strong>) no almacena ni se responsabiliza por la precisión, integridad o veracidad de los archivos ingresados ni por las decisiones de negocio tomadas a partir de los reportes, gráficos o exportaciones generadas.
+                </p>
+              </div>
+              <div className="pt-2 md:pt-0">
+                <a 
+                  href="https://buymeacoffee.com/jgcohen" 
+                  target="_blank" 
+                  rel="noreferrer"
+                  className="text-amber-400 hover:underline font-medium"
+                >
+                  BuyMeACoffee: @jgcohen
+                </a>
+              </div>
+            </div>
+          </footer>
+        </div>
+      );
+    }
+
+    ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+  </script>
+</body>
+</html>
