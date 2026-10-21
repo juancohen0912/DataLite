@@ -131,6 +131,14 @@ ${footer}
 
 // ---------------- Páginas ----------------
 const pagesDir = out('src/pages');
+// Lista de guías generada automáticamente (las más recientes primero)
+const guideCards = readdirSync(join(pagesDir, 'guias')).filter((f) => f.endsWith('.html') && f !== 'index.html').map((f) => {
+  const raw = readFileSync(join(pagesDir, 'guias', f), 'utf8');
+  const meta = JSON.parse(raw.match(/^<!--\s*([\s\S]*?)\s*-->/)[1]);
+  return { slug: f.replace(/\.html$/, ''), h1: meta.h1 || meta.title, description: meta.description, date: meta.article?.published || '' };
+}).sort((a, b) => b.date.localeCompare(a.date) || a.slug.localeCompare(b.slug));
+const esc = (t) => t.replace(/&/g, '&amp;').replace(/</g, '&lt;');
+const guideListHtml = guideCards.map((g) => `<a class="guide-link" href="/guias/${g.slug}"><h3>${esc(g.h1)}</h3><p>${esc(g.description)}</p></a>`).join('\n      ');
 const sitemap = [];
 function walk(dir, rel = '') {
   for (const f of readdirSync(dir, { withFileTypes: true })) {
@@ -141,6 +149,7 @@ function walk(dir, rel = '') {
     if (!m) throw new Error(`Falta el encabezado JSON en ${rel}${f.name}`);
     const meta = JSON.parse(m[1]);
     let body = raw.slice(m[0].length).replace(/\{\{v:(\w+)\}\}/g, (_, k) => V[k] || '');
+    body = body.replace('<!--LISTA_GUIAS-->', guideListHtml);
     const slug = f.name.replace(/\.html$/, '');
     const path = slug === 'index' ? `/${rel}` : `/${rel}${slug}`;
     const target = out(`${rel}${f.name}`);

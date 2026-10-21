@@ -41,3 +41,9 @@ Edita siempre en `src/` y vuelve a ejecutar `npm run bundle`; no edites los .htm
 - Cabeceras HSTS, `X-Frame-Options: DENY`, `nosniff`, `Permissions-Policy` restrictiva y CSP (`object-src 'none'`, `frame-ancestors 'none'`, `base-uri 'self'`).
 - La CSP no restringe orígenes de scripts porque AdSense no es compatible con listas de dominios permitidos; los scripts propios se sirven desde el mismo dominio.
 - Límite de 30 MB y 300.000 filas por archivo. El lector de Excel (SheetJS 0.20.3, versión con parches de seguridad) se carga solo cuando se abre un .xlsx.
+
+## Agente de contenido semanal
+
+Una tarea programada toma cada semana el primer tema pendiente de `content-plan.md`, escribe la guía en `src/pages/guias/`, recompila y abre un pull request con un post sugerido para LinkedIn y otro para X. Para publicar, revisa el PR y haz merge. El índice de guías y el sitemap se actualizan solos.
+
+Los artículos pueden enlazar a la herramienta con un ejemplo ya cargado: `/?ejemplo=ventas`, `/?ejemplo=produccion` o `/?ejemplo=gastos`.

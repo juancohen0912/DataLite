@@ -491,6 +491,11 @@ function App() {
     if (ds) top.current?.scrollIntoView({ block: 'start' });
   }, [!!ds]); // eslint-disable-line react-hooks/exhaustive-deps
 
+  useEffect(() => {
+    const id = new URLSearchParams(location.search).get('ejemplo');
+    if (id && SAMPLES.some((x) => x.id === id)) onSample(id);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
   function load(fileName, sheets, sheetIdx = 0) {
     const t = buildTable(sheets[sheetIdx].aoa);
     if (!t.rows.length || !t.columns.length) throw new Error('No encontramos filas con datos. Revisa que la primera fila tenga los encabezados.');
