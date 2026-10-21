@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Cómo hacer un dashboard a partir de un Excel, paso a paso | DataLite</title>
+<meta name="description" content="Qué gráficos elegir, cómo preparar la hoja de cálculo y cómo presentar un dashboard claro a partir de un Excel o CSV, con ejemplos.">
+<link rel="canonical" href="https://data-lite.vercel.app/guias/dashboard-en-excel">
+<meta name="robots" content="index, follow, max-image-preview:large">
+<meta name="google-adsense-account" content="ca-pub-9781408296787253">
+<meta name="theme-color" content="#15231D">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="DataLite">
+<meta property="og:locale" content="es_CO">
+<meta property="og:title" content="Cómo hacer un dashboard a partir de un Excel, paso a paso | DataLite">
+<meta property="og:description" content="Qué gráficos elegir, cómo preparar la hoja de cálculo y cómo presentar un dashboard claro a partir de un Excel o CSV, con ejemplos.">
+<meta property="og:url" content="https://data-lite.vercel.app/guias/dashboard-en-excel">
+<meta property="og:image" content="https://data-lite.vercel.app/assets/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/assets/icon-180.png">
+<link rel="manifest" href="/site.webmanifest">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:wght@400;500;600;700;800&display=swap">
+<link rel="stylesheet" href="/assets/styles.css?v=9de845744f">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"Article","headline":"Cómo hacer un dashboard a partir de un Excel","description":"Qué gráficos elegir, cómo preparar la hoja de cálculo y cómo presentar un dashboard claro a partir de un Excel o CSV, con ejemplos.","inLanguage":"es","datePublished":"2026-10-20","dateModified":"2026-10-20","author":{"@type":"Person","name":"Juan Cohen","url":"https://data-lite.vercel.app/acerca"},"publisher":{"@type":"Organization","name":"DataLite","logo":{"@type":"ImageObject","url":"https://data-lite.vercel.app/assets/icon-512.png"}},"mainEntityOfPage":"https://data-lite.vercel.app/guias/dashboard-en-excel","image":"https://data-lite.vercel.app/assets/og.png"}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Inicio","item":"https://data-lite.vercel.app/"},{"@type":"ListItem","position":2,"name":"Guías","item":"https://data-lite.vercel.app/guias/"},{"@type":"ListItem","position":3,"name":"Cómo hacer un dashboard a partir de un Excel","item":"https://data-lite.vercel.app/guias/dashboard-en-excel"}]}</script>
+<script defer src="/assets/js/consent.js?v=4410d316b2"></script>
+
+</head>
+<body>
+
+<a class="skip" href="#contenido">Saltar al contenido</a>
+<header class="site-head">
+  <div class="wrap">
+    <a class="brand" href="/" aria-label="DataLite, inicio">
+      <svg class="brand-mark" viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="6" fill="#15231D"/><path d="M8 23V15M14 23V9M20 23V13M26 23v-5" stroke="#F5C542" stroke-width="3" stroke-linecap="round"/><path d="M6 25.5h21" stroke="#0E7A55" stroke-width="2" stroke-linecap="round"/></svg>
+      DataLite
+    </a>
+    <nav class="nav" aria-label="Principal">
+      <a href="/#como-funciona">Cómo funciona</a>
+      <a href="/guias/" class="nav-keep">Guías</a>
+      <a href="/#planes">Planes</a>
+      <a class="nav-cta" href="/#herramienta">Crear dashboard</a>
+    </nav>
+  </div>
+</header>
+<main id="contenido" class="prose-page">
+  <article class="wrap prose">
+    <p class="crumbs"><a href="/">Inicio</a> / <a href="/guias/">Guías</a></p>
+    <h1>Cómo hacer un dashboard a partir de un Excel</h1>
+    <p class="meta">Por Juan Cohen. Lectura de 7 minutos.</p>
+
+    <p>Un dashboard no es una colección de gráficos bonitos: es una página que responde de un vistazo las preguntas que alguien se hace todas las semanas. ¿Vamos mejor o peor que el mes pasado? ¿Dónde está el problema? ¿Qué cambió? Esta guía explica cómo pasar de una hoja de cálculo a un tablero que cumpla ese objetivo, ya sea en DataLite, en Excel o en Power BI.</p>
+
+    <h2>1. Empieza por la pregunta, no por el gráfico</h2>
+    <p>Antes de abrir el archivo, escribe en una frase qué decisión va a apoyar el tablero. «Saber qué región no está cumpliendo la meta» lleva a un diseño muy distinto de «entender la estacionalidad de las ventas». Con la pregunta clara sabrás qué columnas importan y cuáles sobran.</p>
+
+    <h2>2. Prepara la hoja</h2>
+    <ul>
+      <li>Deja una fila de encabezados con nombres claros: «Ventas (COP)» se entiende mejor que «Col7».</li>
+      <li>Un registro por fila. Si tus datos están en formato de matriz (meses en columnas), conviene pasarlos a formato largo: una columna «Mes» y una columna «Valor».</li>
+      <li>Elimina filas de totales y celdas combinadas.</li>
+      <li>Usa fechas reales, no texto como «Ene-25», para poder agrupar por mes o trimestre.</li>
+    </ul>
+
+    <h2>3. Elige los indicadores de arriba</h2>
+    <p>La primera fila de un buen dashboard tiene tres o cuatro cifras grandes: el total, el promedio y algún extremo o variación. Son lo primero que se lee y dan contexto a todo lo demás. En DataLite aparecen automáticamente para la métrica que elijas, y se recalculan con cada filtro.</p>
+
+    <h2>4. Un gráfico para cada tipo de pregunta</h2>
+    <table>
+      <thead><tr><th>Quieres mostrar</th><th>Usa</th><th>Evita</th></tr></thead>
+      <tbody>
+        <tr><td>Evolución en el tiempo</td><td>Línea o área</td><td>Torta</td></tr>
+        <tr><td>Ranking entre categorías</td><td>Barras horizontales ordenadas</td><td>Líneas</td></tr>
+        <tr><td>Participación de un total (pocas partes)</td><td>Dona o torta, máximo 6 porciones</td><td>Torta con 20 porciones</td></tr>
+        <tr><td>Composición que cambia en el tiempo</td><td>Columnas apiladas</td><td>Varias tortas</td></tr>
+        <tr><td>Comparar dos grupos por categoría</td><td>Columnas con «Dividir por»</td><td>Tablas sin gráfico</td></tr>
+      </tbody>
+    </table>
+    <p>Las barras horizontales son subestimadas: cuando los nombres de las categorías son largos, como productos o ciudades, se leen mucho mejor que las columnas verticales con etiquetas giradas.</p>
+
+    <h2>5. Agrupa lo pequeño</h2>
+    <p>Un gráfico con 40 categorías no muestra nada. Quédate con las 5 o 10 más importantes y agrupa el resto en «Otros». DataLite lo hace por defecto con la opción «Mostrar: Top 10», y te avisa cuántas categorías quedaron agrupadas para que no pierdas el contexto.</p>
+
+    <h2>6. Haz que se pueda explorar</h2>
+    <p>Un dashboard estático responde una pregunta; uno interactivo responde la siguiente. Los filtros cruzados permiten hacer clic en una región y ver de inmediato su evolución mensual y sus productos principales. Es la característica que más se aprecia en Power BI y la que más falta en un Excel tradicional.</p>
+
+    <div class="callout"><p><strong>Ejemplo práctico:</strong> carga el ejemplo «Ventas de una tienda» en <a href="/#herramienta">DataLite</a>, haz clic en la barra de la región Caribe y observa cómo cambian los indicadores, la tendencia mensual y la participación por canal.</p></div>
+
+    <h2>7. Presenta el resultado</h2>
+    <p>Si el tablero va a una reunión, exporta a PowerPoint: cada gráfico queda en su propia diapositiva como gráfico nativo, así puedes cambiar colores o títulos sin rehacerlo. Para un correo rápido, una imagen PNG del gráfico principal suele bastar. Para un informe formal, la opción PDF imprime el tablero completo en horizontal.</p>
+
+    <h2>Lista de verificación antes de compartir</h2>
+    <ul>
+      <li>El título de cada gráfico dice qué se calcula y por qué se agrupa.</li>
+      <li>Los totales cuadran con los de tu archivo original.</li>
+      <li>No hay categorías «(vacío)» sin explicación.</li>
+      <li>Las unidades están claras: pesos, dólares, barriles, unidades.</li>
+      <li>Hay como máximo seis colores en un mismo gráfico.</li>
+    </ul>
+
+    <div class="cta-box">
+      <h2>Arma tu dashboard ahora</h2>
+      <p>Sube tu Excel y DataLite te propone los gráficos. Tus datos no salen de tu equipo.</p>
+      <a class="btn btn-primary" href="/#herramienta">Crear dashboard gratis</a>
+    </div>
+
+    <div class="ad-slot" data-slot="article"></div>
+
+    <p>¿Necesitas primero ordenar tus datos? Lee <a href="/guias/tabla-dinamica-online">cómo hacer una tabla dinámica online</a>. ¿Estás evaluando herramientas? Mira <a href="/guias/alternativa-power-bi-gratis">las alternativas gratis a Power BI</a>.</p>
+  </article>
+</main>
+
+
+<footer class="site-foot">
+  <div class="wrap">
+    <div class="foot-grid">
+      <div>
+        <p style="color:#fff;font-weight:800;font-size:18px;margin-bottom:6px">DataLite</p>
+        <p>Dashboards a partir de Excel y CSV, directo en tu navegador. Hecho en Bogotá, Colombia.</p>
+        <p><a href="https://buymeacoffee.com/jgcohen" rel="noopener" target="_blank">Invítame un café en Buy Me a Coffee</a></p>
+      </div>
+      <div>
+        <h2>Producto</h2>
+        <ul><li><a href="/#herramienta">Crear dashboard</a></li><li><a href="/#planes">Planes</a></li><li><a href="/#preguntas">Preguntas frecuentes</a></li></ul>
+      </div>
+      <div>
+        <h2>Aprende</h2>
+        <ul>
+          <li><a href="/guias/">Todas las guías</a></li>
+          <li><a href="/guias/tabla-dinamica-online">Tabla dinámica online</a></li>
+          <li><a href="/guias/dashboard-en-excel">Dashboard desde Excel</a></li>
+          <li><a href="/guias/alternativa-power-bi-gratis">Alternativa a Power BI</a></li>
+        </ul>
+      </div>
+      <div>
+        <h2>Legal</h2>
+        <ul>
+          <li><a href="/acerca">Acerca de y contacto</a></li>
+          <li><a href="/privacidad">Política de privacidad</a></li>
+          <li><a href="/cookies">Política de cookies</a></li>
+          <li><a href="/terminos">Términos de uso</a></li>
+          <li><button type="button" class="linkish" data-open-cookies>Configurar cookies</button></li>
+        </ul>
+      </div>
+    </div>
+    <p class="foot-legal">© <span data-year>2026</span> DataLite, creado por Juan Cohen (jgcohen). El procesamiento de archivos ocurre por completo en tu dispositivo. Los resultados son informativos: verifica tus datos antes de tomar decisiones.</p>
+  </div>
+</footer>
+</body>
+</html>

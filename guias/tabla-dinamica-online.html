@@ -1,0 +1,164 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Cómo hacer una tabla dinámica online gratis (sin Excel) | DataLite</title>
+<meta name="description" content="Guía paso a paso para crear una tabla dinámica desde un archivo Excel o CSV en el navegador: suma, conteo, promedio, filtros y errores comunes.">
+<link rel="canonical" href="https://data-lite.vercel.app/guias/tabla-dinamica-online">
+<meta name="robots" content="index, follow, max-image-preview:large">
+<meta name="google-adsense-account" content="ca-pub-9781408296787253">
+<meta name="theme-color" content="#15231D">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="DataLite">
+<meta property="og:locale" content="es_CO">
+<meta property="og:title" content="Cómo hacer una tabla dinámica online gratis (sin Excel) | DataLite">
+<meta property="og:description" content="Guía paso a paso para crear una tabla dinámica desde un archivo Excel o CSV en el navegador: suma, conteo, promedio, filtros y errores comunes.">
+<meta property="og:url" content="https://data-lite.vercel.app/guias/tabla-dinamica-online">
+<meta property="og:image" content="https://data-lite.vercel.app/assets/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/assets/icon-180.png">
+<link rel="manifest" href="/site.webmanifest">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:wght@400;500;600;700;800&display=swap">
+<link rel="stylesheet" href="/assets/styles.css?v=9de845744f">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"Article","headline":"Cómo hacer una tabla dinámica online, gratis y sin Excel","description":"Guía paso a paso para crear una tabla dinámica desde un archivo Excel o CSV en el navegador: suma, conteo, promedio, filtros y errores comunes.","inLanguage":"es","datePublished":"2026-10-20","dateModified":"2026-10-20","author":{"@type":"Person","name":"Juan Cohen","url":"https://data-lite.vercel.app/acerca"},"publisher":{"@type":"Organization","name":"DataLite","logo":{"@type":"ImageObject","url":"https://data-lite.vercel.app/assets/icon-512.png"}},"mainEntityOfPage":"https://data-lite.vercel.app/guias/tabla-dinamica-online","image":"https://data-lite.vercel.app/assets/og.png"}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Inicio","item":"https://data-lite.vercel.app/"},{"@type":"ListItem","position":2,"name":"Guías","item":"https://data-lite.vercel.app/guias/"},{"@type":"ListItem","position":3,"name":"Cómo hacer una tabla dinámica online, gratis y sin Excel","item":"https://data-lite.vercel.app/guias/tabla-dinamica-online"}]}</script>
+<script defer src="/assets/js/consent.js?v=4410d316b2"></script>
+
+</head>
+<body>
+
+<a class="skip" href="#contenido">Saltar al contenido</a>
+<header class="site-head">
+  <div class="wrap">
+    <a class="brand" href="/" aria-label="DataLite, inicio">
+      <svg class="brand-mark" viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="6" fill="#15231D"/><path d="M8 23V15M14 23V9M20 23V13M26 23v-5" stroke="#F5C542" stroke-width="3" stroke-linecap="round"/><path d="M6 25.5h21" stroke="#0E7A55" stroke-width="2" stroke-linecap="round"/></svg>
+      DataLite
+    </a>
+    <nav class="nav" aria-label="Principal">
+      <a href="/#como-funciona">Cómo funciona</a>
+      <a href="/guias/" class="nav-keep">Guías</a>
+      <a href="/#planes">Planes</a>
+      <a class="nav-cta" href="/#herramienta">Crear dashboard</a>
+    </nav>
+  </div>
+</header>
+<main id="contenido" class="prose-page">
+  <article class="wrap prose">
+    <p class="crumbs"><a href="/">Inicio</a> / <a href="/guias/">Guías</a></p>
+    <h1>Cómo hacer una tabla dinámica online, gratis y sin Excel</h1>
+    <p class="meta">Por Juan Cohen. Lectura de 6 minutos.</p>
+
+    <p>Una tabla dinámica resume cientos o miles de filas en unas pocas: cuánto vendió cada región, cuántos tickets abrió cada área o cuál fue el gasto promedio por categoría. En Excel se arma desde el menú Insertar, pero no siempre tienes Excel a mano, o tienes un CSV exportado de otro sistema que se ve desordenado al abrirlo. Esta guía muestra cómo hacerla en el navegador en menos de un minuto y qué revisar para que los números cuadren.</p>
+
+    <h2>Qué necesitas antes de empezar</h2>
+    <p>Una hoja con formato de tabla: una fila de encabezados y, debajo, un registro por fila. Por ejemplo:</p>
+    <table>
+      <thead><tr><th>Fecha</th><th>Región</th><th>Producto</th><th>Unidades</th><th>Ventas</th></tr></thead>
+      <tbody>
+        <tr><td>03/01/2025</td><td>Andina</td><td>Monitor</td><td>4</td><td>3.000.000</td></tr>
+        <tr><td>03/01/2025</td><td>Caribe</td><td>Cafetera</td><td>2</td><td>640.000</td></tr>
+        <tr><td>04/01/2025</td><td>Andina</td><td>Portátil</td><td>1</td><td>2.800.000</td></tr>
+      </tbody>
+    </table>
+    <p>Tres reglas evitan casi todos los problemas:</p>
+    <ul>
+      <li><strong>Un solo encabezado.</strong> Quita títulos decorativos o celdas combinadas encima de la tabla.</li>
+      <li><strong>Un tipo de dato por columna.</strong> Si en «Ventas» alguien escribió «pendiente», esa columna dejará de ser numérica.</li>
+      <li><strong>Sin subtotales dentro de los datos.</strong> Las filas de «Total» intermedias se sumarían dos veces.</li>
+    </ul>
+
+    <h2>Paso a paso en DataLite</h2>
+    <ol>
+      <li>Abre <a href="/#herramienta">la herramienta</a> y arrastra tu archivo .xlsx o .csv sobre la hoja. Si tiene varias pestañas, elige la correcta en el selector «Hoja».</li>
+      <li>DataLite detecta qué columnas son fechas, números y texto, y arma una primera tabla dinámica con la combinación más útil que encuentre.</li>
+      <li>En <strong>Agrupar por</strong> elige la columna que define las filas de tu tabla, por ejemplo «Región».</li>
+      <li>En <strong>Cálculo</strong> elige la operación y en <strong>Valor</strong> la columna a calcular, por ejemplo «Suma» de «Ventas».</li>
+      <li>La tabla a la derecha del gráfico muestra el resultado con el porcentaje de cada fila sobre el total. Usa el buscador para encontrar una categoría.</li>
+      <li>Para llevártela, abre <strong>Exportar</strong> y elige «Tabla en Excel».</li>
+    </ol>
+
+    <div class="callout"><p><strong>Consejo:</strong> «Dividir por» es el equivalente a poner una segunda columna en el área de columnas de Excel. Agrupa por mes y divide por región, y tendrás una matriz con una serie por región.</p></div>
+
+    <h2>Qué cálculo usar en cada caso</h2>
+    <table>
+      <thead><tr><th>Cálculo</th><th>Pregunta que responde</th><th>Ejemplo</th></tr></thead>
+      <tbody>
+        <tr><td>Suma</td><td>¿Cuánto en total?</td><td>Ventas por región</td></tr>
+        <tr><td>Conteo</td><td>¿Cuántas filas hay?</td><td>Pedidos por canal</td></tr>
+        <tr><td>Conteo único</td><td>¿Cuántos elementos distintos?</td><td>Clientes diferentes por ciudad</td></tr>
+        <tr><td>Promedio</td><td>¿Cuál es el valor típico?</td><td>Ticket promedio por vendedor</td></tr>
+        <tr><td>Mínimo y máximo</td><td>¿Cuál es el extremo?</td><td>Precio más alto por producto</td></tr>
+      </tbody>
+    </table>
+    <p>Un error común es sumar columnas que no se deben sumar, como precios unitarios o porcentajes. Si sumas el precio unitario de cada venta obtienes un número sin significado; lo correcto es el promedio, o mejor aún, dividir ventas totales entre unidades totales.</p>
+
+    <h2>Filtrar la tabla dinámica</h2>
+    <p>Con <strong>Agregar filtro</strong> eliges una columna y los valores que quieres conservar, igual que una segmentación en Excel. También puedes hacer clic directamente sobre una barra del gráfico: la tabla, los indicadores y los gráficos sugeridos se recalculan solo con esa categoría. Haz clic de nuevo para quitar el filtro.</p>
+
+    <h2>Errores frecuentes y cómo resolverlos</h2>
+    <h3>Los números aparecen como texto</h3>
+    <p>Pasa cuando la columna mezcla valores como «N/A» o «-» con cifras. DataLite tolera algunos vacíos, pero si más del 15 % de las celdas no son números, tratará la columna como texto. Reemplaza esos valores por celdas vacías en tu archivo.</p>
+    <h3>Las fechas se agrupan mal</h3>
+    <p>En Colombia y gran parte de Latinoamérica el formato es día/mes/año. DataLite asume ese orden salvo que el archivo indique lo contrario (por ejemplo, un día 25 en la segunda posición). Si exportas desde un sistema en inglés, revisa una fila con un día mayor a 12 para confirmar.</p>
+    <h3>Aparece una categoría «(vacío)»</h3>
+    <p>Son filas sin valor en la columna de agrupación. No es un error de la herramienta: te está mostrando registros incompletos que conviene revisar.</p>
+
+    <div class="cta-box">
+      <h2>Pruébalo con tus datos</h2>
+      <p>Si no tienes un archivo listo, usa uno de los ejemplos de la herramienta para practicar.</p>
+      <a class="btn btn-primary" href="/#herramienta">Crear mi tabla dinámica</a>
+    </div>
+
+    <div class="ad-slot" data-slot="article"></div>
+
+    <h2>Preguntas relacionadas</h2>
+    <p><strong>¿Puedo hacer una tabla dinámica con un CSV?</strong> Sí, y no necesitas convertirlo antes. DataLite reconoce los separadores coma, punto y coma y tabulación.</p>
+    <p><strong>¿Cuántas filas soporta?</strong> Hasta 300.000 filas en archivos de hasta 30 MB. El límite real depende de la memoria de tu equipo, porque todo se calcula en tu navegador.</p>
+    <p>Sigue con la guía sobre <a href="/guias/dashboard-en-excel">cómo convertir esa tabla en un dashboard</a>.</p>
+  </article>
+</main>
+
+
+<footer class="site-foot">
+  <div class="wrap">
+    <div class="foot-grid">
+      <div>
+        <p style="color:#fff;font-weight:800;font-size:18px;margin-bottom:6px">DataLite</p>
+        <p>Dashboards a partir de Excel y CSV, directo en tu navegador. Hecho en Bogotá, Colombia.</p>
+        <p><a href="https://buymeacoffee.com/jgcohen" rel="noopener" target="_blank">Invítame un café en Buy Me a Coffee</a></p>
+      </div>
+      <div>
+        <h2>Producto</h2>
+        <ul><li><a href="/#herramienta">Crear dashboard</a></li><li><a href="/#planes">Planes</a></li><li><a href="/#preguntas">Preguntas frecuentes</a></li></ul>
+      </div>
+      <div>
+        <h2>Aprende</h2>
+        <ul>
+          <li><a href="/guias/">Todas las guías</a></li>
+          <li><a href="/guias/tabla-dinamica-online">Tabla dinámica online</a></li>
+          <li><a href="/guias/dashboard-en-excel">Dashboard desde Excel</a></li>
+          <li><a href="/guias/alternativa-power-bi-gratis">Alternativa a Power BI</a></li>
+        </ul>
+      </div>
+      <div>
+        <h2>Legal</h2>
+        <ul>
+          <li><a href="/acerca">Acerca de y contacto</a></li>
+          <li><a href="/privacidad">Política de privacidad</a></li>
+          <li><a href="/cookies">Política de cookies</a></li>
+          <li><a href="/terminos">Términos de uso</a></li>
+          <li><button type="button" class="linkish" data-open-cookies>Configurar cookies</button></li>
+        </ul>
+      </div>
+    </div>
+    <p class="foot-legal">© <span data-year>2026</span> DataLite, creado por Juan Cohen (jgcohen). El procesamiento de archivos ocurre por completo en tu dispositivo. Los resultados son informativos: verifica tus datos antes de tomar decisiones.</p>
+  </div>
+</footer>
+</body>
+</html>
