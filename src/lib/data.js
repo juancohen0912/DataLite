@@ -2,28 +2,6 @@
 
 export const MAX_FILE_MB = 30;
 export const MAX_ROWS = 300000;
-const SHEETJS_URL = 'https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js';
-
-let sheetJsPromise = null;
-export function loadSheetJS() {
-  if (window.XLSX) return Promise.resolve(window.XLSX);
-  if (!sheetJsPromise) {
-    sheetJsPromise = new Promise((resolve, reject) => {
-      const s = document.createElement('script');
-      s.src = SHEETJS_URL;
-      s.async = true;
-      s.crossOrigin = 'anonymous';
-      s.onload = () => (window.XLSX ? resolve(window.XLSX) : reject(new Error('No se pudo iniciar el lector de Excel.')));
-      s.onerror = () => {
-        sheetJsPromise = null;
-        reject(new Error('No se pudo descargar el lector de Excel. Revisa tu conexión o guarda el archivo como CSV.'));
-      };
-      document.head.appendChild(s);
-    });
-  }
-  return sheetJsPromise;
-}
-
 // ---------- Lectura de archivos ----------
 
 function detectDelimiter(text) {
@@ -83,16 +61,14 @@ export async function readFile(file) {
   if (/\.(csv|txt|tsv)$/.test(name)) {
     return { sheets: [{ name: file.name.replace(/\.[^.]+$/, ''), aoa: parseCSV(decodeText(buffer)) }] };
   }
-  if (!/\.(xlsx|xlsm|xls|ods)$/.test(name)) {
-    throw new Error('Formato no compatible. Usa .xlsx, .xls, .ods o .csv.');
+  if (/\.(xls|xlsb)$/.test(name)) {
+    throw new Error('Los archivos .xls antiguos no son compatibles. Ábrelo en Excel y usa «Guardar como» .xlsx o CSV.');
   }
-  const XLSX = await loadSheetJS();
-  const wb = XLSX.read(buffer, { type: 'array', cellDates: true, dense: true });
-  const sheets = wb.SheetNames.map((sn) => ({
-    name: sn,
-    aoa: XLSX.utils.sheet_to_json(wb.Sheets[sn], { header: 1, defval: '', raw: true, blankrows: false }),
-  })).filter((s) => s.aoa.length > 0);
-  if (!sheets.length) throw new Error('El archivo no tiene hojas con datos.');
+  if (!/\.(xlsx|xlsm|ods)$/.test(name)) {
+    throw new Error('Formato no compatible. Usa .xlsx, .ods o .csv.');
+  }
+  const { readWorkbook } = await import('./xlsx.js');
+  const sheets = await readWorkbook(buffer, name.split('.').pop(), MAX_ROWS + 1);
   return { sheets };
 }
 
@@ -358,7 +334,7 @@ export function pivot(rows, columns, { group, metric, agg = 'SUM', split = -1, g
   let items = [...map.values()].map((g) => {
     const it = { key: g.key, label: g.label, value: finish(g.acc, effAgg) };
     if (split >= 0) {
-      it.byS = {};
+      it.byS = Object.create(null);
       const others = newAcc();
       let hasOthers = false;
       for (const [s, a] of g.series) {
@@ -382,7 +358,7 @@ export function pivot(rows, columns, { group, metric, agg = 'SUM', split = -1, g
     const tail = items.slice(+topN);
     const other = { key: '__otros__', label: `Otros (${tail.length})`, value: tail.reduce((s, x) => s + x.value, 0), isOther: true };
     if (split >= 0) {
-      other.byS = {};
+      other.byS = Object.create(null);
       for (const s of series) other.byS[s] = tail.reduce((acc, x) => acc + (x.byS?.[s] || 0), 0);
     }
     items = [...head, other];

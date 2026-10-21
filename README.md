@@ -40,7 +40,8 @@ Edita siempre en `src/` y vuelve a ejecutar `npm run bundle`; no edites los .htm
 
 - Cabeceras HSTS, `X-Frame-Options: DENY`, `nosniff`, `Permissions-Policy` restrictiva y CSP (`object-src 'none'`, `frame-ancestors 'none'`, `base-uri 'self'`).
 - La CSP no restringe orígenes de scripts porque AdSense no es compatible con listas de dominios permitidos; los scripts propios se sirven desde el mismo dominio.
-- Límite de 30 MB y 300.000 filas por archivo. El lector de Excel (SheetJS 0.20.3, versión con parches de seguridad) se carga solo cuando se abre un .xlsx.
+- Límite de 30 MB y 300.000 filas por archivo, y protección contra archivos comprimidos maliciosos (zip bombs).
+- El lector y escritor de Excel es propio (`src/lib/xlsx.js`, con JSZip empaquetado): la app no ejecuta código de servidores externos. Los .xls antiguos no se leen; se pide guardarlos como .xlsx.
 
 ## Agente de contenido semanal
 

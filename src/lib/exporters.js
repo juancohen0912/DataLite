@@ -1,36 +1,38 @@
-import { loadSheetJS, AGG_LABELS } from './data.js';
+import { AGG_LABELS } from './data.js';
 import { PALETTE } from './Chart.jsx';
 
-const safeName = (s) => String(s).replace(/[^\p{L}\p{N}_-]+/gu, '_').replace(/_+/g, '_').slice(0, 60) || 'reporte';
+// Nombres de archivo sin tildes ni símbolos: algunos navegadores descartan nombres con caracteres especiales
+export const safeName = (s) => String(s).normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^A-Za-z0-9_-]+/g, '_').replace(/_+/g, '_').replace(/^_|_$/g, '').slice(0, 60) || 'reporte';
 
 export function downloadDataUrl(dataUrl, filename) {
+  // Se convierte a Blob local: el nombre del archivo se respeta y no se navega a URLs data:
+  const [head, b64] = dataUrl.split(',');
+  const mime = /data:([^;]+)/.exec(head)?.[1] || 'application/octet-stream';
+  const bin = atob(b64);
+  const bytes = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+  downloadBlob(new Blob([bytes], { type: mime }), filename);
+}
+
+function clickDownload(url, filename) {
   const a = document.createElement('a');
-  a.href = dataUrl; a.download = filename; a.rel = 'noopener';
+  a.href = url; a.download = filename; a.rel = 'noopener';
   document.body.appendChild(a); a.click(); a.remove();
 }
 
 export function downloadBlob(blob, filename) {
   const url = URL.createObjectURL(blob);
-  downloadDataUrl(url, filename);
+  clickDownload(url, filename);
   setTimeout(() => URL.revokeObjectURL(url), 2000);
 }
 
-/** Tabla dinámica en Excel (o CSV si no se puede cargar el lector). */
+/** Tabla dinámica en Excel. Los textos se guardan como texto: nunca se ejecutan como fórmulas. */
 export async function exportPivotXlsx(view, fileBase) {
-  const header = [view.groupName, ...(view.series.length ? view.series : []), `${AGG_LABELS[view.agg]} de ${view.metricName}`];
+  const header = [view.groupName, ...view.series, `${AGG_LABELS[view.agg]} de ${view.metricName}`];
   const rows = view.items.map((d) => [d.label, ...view.series.map((s) => d.byS?.[s] || 0), d.value]);
-  try {
-    const XLSX = await loadSheetJS();
-    const ws = XLSX.utils.aoa_to_sheet([header, ...rows]);
-    ws['!cols'] = header.map((h, i) => ({ wch: i === 0 ? 28 : 16 }));
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, 'Tabla dinámica');
-    XLSX.writeFile(wb, `${safeName(fileBase)}_tabla.xlsx`);
-  } catch {
-    const esc = (v) => (typeof v === 'number' ? String(v).replace('.', ',') : `"${String(v).replace(/"/g, '""')}"`);
-    const csv = '﻿' + [header, ...rows].map((r) => r.map(esc).join(';')).join('\r\n');
-    downloadBlob(new Blob([csv], { type: 'text/csv;charset=utf-8' }), `${safeName(fileBase)}_tabla.csv`);
-  }
+  const { writeXlsx } = await import('./xlsx.js');
+  const blob = await writeXlsx([header, ...rows], 'Tabla dinámica', header.map((_, i) => (i === 0 ? 28 : 16)));
+  downloadBlob(blob, `${safeName(fileBase)}_tabla.xlsx`);
 }
 
 const PPT_TYPE = { bar: 'bar', hbar: 'bar', line: 'line', area: 'area', pie: 'pie', donut: 'doughnut' };

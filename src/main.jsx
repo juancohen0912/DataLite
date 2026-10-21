@@ -6,7 +6,7 @@ import {
 } from './lib/data.js';
 import { SAMPLES, makeSample } from './lib/samples.js';
 import { Chart, svgToPng } from './lib/Chart.jsx';
-import { downloadDataUrl, exportPivotXlsx, exportPptx } from './lib/exporters.js';
+import { downloadDataUrl, exportPivotXlsx, exportPptx, safeName } from './lib/exporters.js';
 
 const track = (name, data) => { try { window.va?.('event', { name, data }); } catch { /* sin analítica */ } };
 
@@ -41,7 +41,7 @@ function Dropzone({ onFile, onSample, busy, error }) {
       </div>
       <div className="sheet-body">
         <p className="sheet-title">{busy ? 'Leyendo tu archivo…' : 'Suelta aquí tu Excel o CSV'}</p>
-        <p className="sheet-sub">o elige uno desde tu equipo. .xlsx, .xls, .ods y .csv hasta {MAX_FILE_MB} MB.</p>
+        <p className="sheet-sub">o elige uno desde tu equipo. .xlsx, .ods y .csv hasta {MAX_FILE_MB} MB.</p>
         <div className="sheet-actions">
           <button type="button" className="btn btn-primary" onClick={() => input.current?.click()} disabled={busy}>Elegir archivo</button>
           <input ref={input} type="file" hidden accept=".xlsx,.xlsm,.xls,.ods,.csv,.tsv,.txt"
@@ -374,7 +374,7 @@ function Dashboard({ ds, onReset, onSheet }) {
     try {
       if (kind === 'png') {
         const svg = chartRef.current?.svg();
-        if (svg) downloadDataUrl(await svgToPng(svg, { title: view.title }), `DataLite_${view.groupName}.png`);
+        if (svg) downloadDataUrl(await svgToPng(svg, { title: view.title }), `DataLite_${safeName(view.groupName)}.png`);
       } else if (kind === 'pptx') {
         await exportPptx([view, ...autoViews.map((a) => a.view)], ds.fileName, kpis);
       } else if (kind === 'xlsx') {
