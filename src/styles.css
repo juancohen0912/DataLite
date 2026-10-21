@@ -68,7 +68,6 @@ p { margin: 0 0 1em; }
 #tool { grid-area: tool; }
 .demo { grid-area: demo; margin: 0; }
 .hero h1 { font-size: clamp(36px, 5.2vw, 60px); font-weight: 800; letter-spacing: -0.035em; line-height: 1.02; margin-bottom: 20px; }
-.hero-h1::after { content: '=A1:F9'; display: inline-block; font-size: .32em; font-weight: 600; vertical-align: super; letter-spacing: 0; color: var(--muted); border: 1px solid var(--line); padding: 2px 6px; border-radius: 3px; background: var(--sheet); margin-left: 4px; }
 .hero-lead { font-size: 19px; color: var(--muted); max-width: 46ch; }
 @media (max-width: 960px) { .hero .wrap { grid-template-columns: minmax(0, 1fr); grid-template-areas: 'copy' 'tool' 'demo'; gap: 20px; } .hero { padding-top: 24px; } .hero-lead { font-size: 17px; margin: 0; } }
 
