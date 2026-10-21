@@ -1,0 +1,74 @@
+<!--
+{
+  "title": "Cómo hacer un dashboard a partir de un Excel, paso a paso | DataLite",
+  "h1": "Cómo hacer un dashboard a partir de un Excel",
+  "description": "Qué gráficos elegir, cómo preparar la hoja de cálculo y cómo presentar un dashboard claro a partir de un Excel o CSV, con ejemplos.",
+  "article": { "published": "2026-10-20" }
+}
+-->
+<main id="contenido" class="prose-page">
+  <article class="wrap prose">
+    <p class="crumbs"><a href="/">Inicio</a> / <a href="/guias/">Guías</a></p>
+    <h1>Cómo hacer un dashboard a partir de un Excel</h1>
+    <p class="meta">Por Juan Cohen. Lectura de 7 minutos.</p>
+
+    <p>Un dashboard no es una colección de gráficos bonitos: es una página que responde de un vistazo las preguntas que alguien se hace todas las semanas. ¿Vamos mejor o peor que el mes pasado? ¿Dónde está el problema? ¿Qué cambió? Esta guía explica cómo pasar de una hoja de cálculo a un tablero que cumpla ese objetivo, ya sea en DataLite, en Excel o en Power BI.</p>
+
+    <h2>1. Empieza por la pregunta, no por el gráfico</h2>
+    <p>Antes de abrir el archivo, escribe en una frase qué decisión va a apoyar el tablero. «Saber qué región no está cumpliendo la meta» lleva a un diseño muy distinto de «entender la estacionalidad de las ventas». Con la pregunta clara sabrás qué columnas importan y cuáles sobran.</p>
+
+    <h2>2. Prepara la hoja</h2>
+    <ul>
+      <li>Deja una fila de encabezados con nombres claros: «Ventas (COP)» se entiende mejor que «Col7».</li>
+      <li>Un registro por fila. Si tus datos están en formato de matriz (meses en columnas), conviene pasarlos a formato largo: una columna «Mes» y una columna «Valor».</li>
+      <li>Elimina filas de totales y celdas combinadas.</li>
+      <li>Usa fechas reales, no texto como «Ene-25», para poder agrupar por mes o trimestre.</li>
+    </ul>
+
+    <h2>3. Elige los indicadores de arriba</h2>
+    <p>La primera fila de un buen dashboard tiene tres o cuatro cifras grandes: el total, el promedio y algún extremo o variación. Son lo primero que se lee y dan contexto a todo lo demás. En DataLite aparecen automáticamente para la métrica que elijas, y se recalculan con cada filtro.</p>
+
+    <h2>4. Un gráfico para cada tipo de pregunta</h2>
+    <table>
+      <thead><tr><th>Quieres mostrar</th><th>Usa</th><th>Evita</th></tr></thead>
+      <tbody>
+        <tr><td>Evolución en el tiempo</td><td>Línea o área</td><td>Torta</td></tr>
+        <tr><td>Ranking entre categorías</td><td>Barras horizontales ordenadas</td><td>Líneas</td></tr>
+        <tr><td>Participación de un total (pocas partes)</td><td>Dona o torta, máximo 6 porciones</td><td>Torta con 20 porciones</td></tr>
+        <tr><td>Composición que cambia en el tiempo</td><td>Columnas apiladas</td><td>Varias tortas</td></tr>
+        <tr><td>Comparar dos grupos por categoría</td><td>Columnas con «Dividir por»</td><td>Tablas sin gráfico</td></tr>
+      </tbody>
+    </table>
+    <p>Las barras horizontales son subestimadas: cuando los nombres de las categorías son largos, como productos o ciudades, se leen mucho mejor que las columnas verticales con etiquetas giradas.</p>
+
+    <h2>5. Agrupa lo pequeño</h2>
+    <p>Un gráfico con 40 categorías no muestra nada. Quédate con las 5 o 10 más importantes y agrupa el resto en «Otros». DataLite lo hace por defecto con la opción «Mostrar: Top 10», y te avisa cuántas categorías quedaron agrupadas para que no pierdas el contexto.</p>
+
+    <h2>6. Haz que se pueda explorar</h2>
+    <p>Un dashboard estático responde una pregunta; uno interactivo responde la siguiente. Los filtros cruzados permiten hacer clic en una región y ver de inmediato su evolución mensual y sus productos principales. Es la característica que más se aprecia en Power BI y la que más falta en un Excel tradicional.</p>
+
+    <div class="callout"><p><strong>Ejemplo práctico:</strong> carga el ejemplo «Ventas de una tienda» en <a href="/#herramienta">DataLite</a>, haz clic en la barra de la región Caribe y observa cómo cambian los indicadores, la tendencia mensual y la participación por canal.</p></div>
+
+    <h2>7. Presenta el resultado</h2>
+    <p>Si el tablero va a una reunión, exporta a PowerPoint: cada gráfico queda en su propia diapositiva como gráfico nativo, así puedes cambiar colores o títulos sin rehacerlo. Para un correo rápido, una imagen PNG del gráfico principal suele bastar. Para un informe formal, la opción PDF imprime el tablero completo en horizontal.</p>
+
+    <h2>Lista de verificación antes de compartir</h2>
+    <ul>
+      <li>El título de cada gráfico dice qué se calcula y por qué se agrupa.</li>
+      <li>Los totales cuadran con los de tu archivo original.</li>
+      <li>No hay categorías «(vacío)» sin explicación.</li>
+      <li>Las unidades están claras: pesos, dólares, barriles, unidades.</li>
+      <li>Hay como máximo seis colores en un mismo gráfico.</li>
+    </ul>
+
+    <div class="cta-box">
+      <h2>Arma tu dashboard ahora</h2>
+      <p>Sube tu Excel y DataLite te propone los gráficos. Tus datos no salen de tu equipo.</p>
+      <a class="btn btn-primary" href="/#herramienta">Crear dashboard gratis</a>
+    </div>
+
+    <div class="ad-slot" data-slot="article"></div>
+
+    <p>¿Necesitas primero ordenar tus datos? Lee <a href="/guias/tabla-dinamica-online">cómo hacer una tabla dinámica online</a>. ¿Estás evaluando herramientas? Mira <a href="/guias/alternativa-power-bi-gratis">las alternativas gratis a Power BI</a>.</p>
+  </article>
+</main>

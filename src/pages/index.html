@@ -1,0 +1,297 @@
+<!--
+{
+  "title": "DataLite: convierte tu Excel en un dashboard gratis, sin instalar nada",
+  "description": "Sube un Excel o CSV y obtén gráficos, tablas dinámicas y filtros tipo Power BI en segundos. Gratis, en español y sin subir tus datos a ningún servidor.",
+  "app": true,
+  "schema": [
+    {
+      "@context": "https://schema.org",
+      "@type": "WebApplication",
+      "name": "DataLite",
+      "url": "https://data-lite.vercel.app/",
+      "applicationCategory": "BusinessApplication",
+      "operatingSystem": "Cualquiera (navegador web)",
+      "inLanguage": "es",
+      "description": "Herramienta gratuita para crear dashboards, gráficos y tablas dinámicas a partir de archivos Excel y CSV directamente en el navegador.",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
+      },
+      "featureList": [
+        "Tablas dinámicas",
+        "Gráficos de barras, líneas, área, torta y dona",
+        "Filtros interactivos",
+        "Exportación a PowerPoint con gráficos editables",
+        "Exportación a PNG, PDF y Excel",
+        "Procesamiento local sin subir archivos"
+      ],
+      "author": {
+        "@type": "Person",
+        "name": "Juan Cohen"
+      }
+    },
+    {
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "¿DataLite sube mis archivos a internet?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "No. El archivo se lee y se procesa dentro de tu navegador. Ningún dato de tu hoja de cálculo se envía a nuestros servidores."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "¿Es gratis?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Sí. Todas las funciones actuales son gratuitas. El sitio se sostiene con publicidad y aportes voluntarios."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "¿Qué formatos acepta?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Archivos .xlsx, .xls, .xlsm, .ods y .csv de hasta 30 MB. Si el libro tiene varias hojas, puedes elegir cuál analizar."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "¿Puedo editar los gráficos en PowerPoint?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Sí. La exportación a PowerPoint crea gráficos nativos que puedes editar, cambiar de color o actualizar dentro de PowerPoint."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "¿Reemplaza a Power BI?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Para análisis rápidos de una hoja de cálculo, sí. Si necesitas modelos de datos con varias tablas relacionadas, actualización automática o seguridad por usuario, Power BI sigue siendo la herramienta adecuada."
+          }
+        }
+      ]
+    },
+    {
+      "@context": "https://schema.org",
+      "@type": "VideoObject",
+      "name": "Cómo convertir un Excel en dashboard con DataLite",
+      "description": "Demostración de 35 segundos: subir un Excel, obtener el tablero automático, filtrar con un clic y descargar el reporte en PowerPoint o PDF.",
+      "thumbnailUrl": [
+        "https://data-lite.vercel.app/assets/video/demo-poster.jpg"
+      ],
+      "uploadDate": "2026-10-20T21:30:00-05:00",
+      "duration": "PT35S",
+      "contentUrl": "https://data-lite.vercel.app/assets/video/demo.mp4",
+      "embedUrl": "https://data-lite.vercel.app/",
+      "inLanguage": "es",
+      "author": {
+        "@type": "Person",
+        "name": "Juan Cohen"
+      },
+      "hasPart": [
+        {
+          "@type": "Clip",
+          "name": "Subir el archivo",
+          "startOffset": 3,
+          "endOffset": 6,
+          "url": "https://data-lite.vercel.app/#t=3"
+        },
+        {
+          "@type": "Clip",
+          "name": "Tablero automático",
+          "startOffset": 6,
+          "endOffset": 11,
+          "url": "https://data-lite.vercel.app/#t=6"
+        },
+        {
+          "@type": "Clip",
+          "name": "Filtrar con un clic",
+          "startOffset": 11,
+          "endOffset": 22,
+          "url": "https://data-lite.vercel.app/#t=11"
+        },
+        {
+          "@type": "Clip",
+          "name": "Descargar en PowerPoint o PDF",
+          "startOffset": 22,
+          "endOffset": 31,
+          "url": "https://data-lite.vercel.app/#t=22"
+        },
+        {
+          "@type": "Clip",
+          "name": "Sobre el autor",
+          "startOffset": 31,
+          "endOffset": 35,
+          "url": "https://data-lite.vercel.app/#t=31"
+        }
+      ]
+    }
+  ]
+}
+-->
+<main id="contenido">
+  <section class="hero" id="herramienta">
+    <div class="wrap">
+      <div class="hero-copy">
+        <h1>Tu Excel, convertido en dashboard<span class="cell-ref">=A1:F9</span></h1>
+        <p class="hero-lead">Sube una hoja de cálculo y DataLite arma los gráficos, la tabla dinámica y los filtros por ti. Sin instalar nada, sin crear cuenta y sin que tus datos salgan de tu computador.</p>
+      </div>
+      <figure class="demo" aria-labelledby="demo-title">
+        <div class="demo-frame">
+          <video id="demo-video" muted playsinline loop preload="metadata" poster="/assets/video/demo-poster.jpg?v={{v:poster}}" aria-describedby="demo-title">
+            <source src="/assets/video/demo.webm?v={{v:webm}}" type="video/webm">
+            <source src="/assets/video/demo.mp4?v={{v:mp4}}" type="video/mp4">
+          </video>
+          <button type="button" class="demo-toggle" aria-label="Reproducir la demostración">
+            <svg class="i-play" viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><path d="M4 2.5v11l9-5.5z" fill="currentColor"/></svg>
+            <svg class="i-pause" viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><path d="M4 2.5h3v11H4zM9 2.5h3v11H9z" fill="currentColor"/></svg>
+            <span>Ver demo</span>
+          </button>
+          <button type="button" class="demo-full" aria-label="Ver la demostración en pantalla completa">
+            <svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><path d="M2 6V2h4M10 2h4v4M14 10v4h-4M6 14H2v-4" fill="none" stroke="currentColor" stroke-width="1.8"/></svg>
+          </button>
+          <div class="demo-progress" aria-hidden="true"><i></i></div>
+        </div>
+        <figcaption>
+          <p id="demo-title" class="demo-title">Mira cómo funciona en 35 segundos</p>
+          <ol class="demo-steps">
+            <li><button type="button" data-t="3"><span>Sube tu archivo</span><small>0:03</small></button></li>
+            <li><button type="button" data-t="6.5"><span>Recibe el tablero</span><small>0:06</small></button></li>
+            <li><button type="button" data-t="11.5"><span>Filtra con un clic</span><small>0:11</small></button></li>
+            <li><button type="button" data-t="22.5"><span>Descarga PPTX o PDF</span><small>0:22</small></button></li>
+          </ol>
+          <p class="demo-author">Creado por <a href="/acerca">Juan Cohen</a>, ingeniero en Bogotá. Si te ahorra tiempo, <a href="https://buymeacoffee.com/jgcohen" rel="noopener" target="_blank">invítale un café</a>.</p>
+        </figcaption>
+      </figure>
+      <div id="tool">
+        <noscript><p class="error">DataLite necesita JavaScript activado para leer tu archivo en el navegador.</p></noscript>
+        <div class="sheet" aria-busy="true"><div class="sheet-body"><p class="sheet-title">Cargando la herramienta…</p></div></div>
+      </div>
+    </div>
+  </section>
+
+  <div class="marketing">
+    <section class="band band-white" id="como-funciona">
+      <div class="wrap">
+        <h2>Del archivo al reporte en tres pasos</h2>
+        <ol class="steps">
+          <li>
+            <h3>Suelta tu archivo</h3>
+            <p>Arrastra un Excel o CSV. Si el libro tiene varias hojas, elige la que quieras analizar. También acepta CSV con punto y coma y números con coma decimal.</p>
+          </li>
+          <li>
+            <h3>Revisa lo que encontró</h3>
+            <p>DataLite propone de inmediato los gráficos que tienen sentido para tus columnas: tendencia en el tiempo, ranking por categoría y participación porcentual.</p>
+          </li>
+          <li>
+            <h3>Ajusta y exporta</h3>
+            <p>Cambia la agrupación, el cálculo o el tipo de gráfico, filtra con un clic y descarga el resultado en PowerPoint, PNG, PDF o Excel.</p>
+          </li>
+        </ol>
+      </div>
+    </section>
+
+    <section class="band" id="funciones">
+      <div class="wrap">
+        <h2>Lo que harías en Power BI, sin la curva de aprendizaje</h2>
+        <p class="lead">Pensado para quien necesita entender una hoja de cálculo hoy, no para quien tiene una semana para aprender una herramienta nueva.</p>
+        <div class="features">
+          <div class="feature"><h3>Tabla dinámica instantánea</h3><p>Suma, promedio, conteo, conteo único, mínimo y máximo por cualquier columna, con porcentaje del total.</p></div>
+          <div class="feature"><h3>Series por categoría</h3><p>Usa «Dividir por» para ver, por ejemplo, las ventas de cada mes separadas por región en barras apiladas o líneas.</p></div>
+          <div class="feature"><h3>Filtros cruzados</h3><p>Selecciona una barra o una porción y todo el tablero se actualiza. Combina filtros por varias columnas.</p></div>
+          <div class="feature"><h3>Fechas agrupadas solas</h3><p>Reconoce fechas en formato día/mes/año o ISO y las agrupa por día, mes, trimestre o año.</p></div>
+          <div class="feature"><h3>PowerPoint editable</h3><p>Cada gráfico se exporta como gráfico nativo de PowerPoint, no como una imagen, para que puedas ajustarlo en tu presentación.</p></div>
+          <div class="feature"><h3>Privado por diseño</h3><p>El análisis corre en tu navegador. Puedes cargar información sensible de tu empresa sin enviarla a terceros.</p></div>
+        </div>
+        <h2 style="margin-top:56px">Sirve para cualquier hoja que tengas a mano</h2>
+        <ul class="uses">
+          <li>Reportes de ventas</li><li>Inventarios</li><li>Gastos personales</li><li>Producción diaria</li><li>Encuestas y formularios</li>
+          <li>Notas de estudiantes</li><li>Cartera y cobranza</li><li>Indicadores de mantenimiento</li><li>Exportaciones de tu ERP</li>
+        </ul>
+      </div>
+    </section>
+
+    <section class="band band-white" id="comparacion">
+      <div class="wrap">
+        <h2>DataLite frente a las herramientas de siempre</h2>
+        <div class="table-scroll">
+          <table class="compare">
+            <thead><tr><th scope="col"></th><th scope="col">DataLite</th><th scope="col">Tabla dinámica de Excel</th><th scope="col">Power BI Desktop</th></tr></thead>
+            <tbody>
+              <tr><th scope="row">Tiempo hasta el primer gráfico</th><td class="yes">Segundos</td><td>Minutos</td><td>Minutos a horas</td></tr>
+              <tr><th scope="row">Instalación</th><td class="yes">Ninguna, funciona en el navegador</td><td>Requiere Excel</td><td>Solo Windows</td></tr>
+              <tr><th scope="row">Gráficos sugeridos automáticamente</th><td class="yes">Sí</td><td>Parcial</td><td>Parcial</td></tr>
+              <tr><th scope="row">Filtros con clic en el gráfico</th><td class="yes">Sí</td><td>Con segmentaciones</td><td>Sí</td></tr>
+              <tr><th scope="row">Varias tablas relacionadas</th><td>No</td><td>Con Power Pivot</td><td class="yes">Sí</td></tr>
+              <tr><th scope="row">Costo</th><td class="yes">Gratis</td><td>Licencia de Office</td><td>Gratis para uso personal; licencia para compartir</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <section class="band" id="planes">
+      <div class="wrap">
+        <h2>Planes</h2>
+        <p class="lead">Todo lo que ves hoy es gratis. La versión Pro está en desarrollo y se financia con quienes la apoyan desde ya.</p>
+        <div class="plans">
+          <div class="plan">
+            <h3>Gratis</h3>
+            <p class="price">$0</p>
+            <ul>
+              <li>Archivos de hasta 30 MB y 300.000 filas</li>
+              <li>Gráficos sugeridos, tabla dinámica y filtros</li>
+              <li>Exportación a PowerPoint, PNG, PDF y Excel</li>
+              <li>Exportaciones con la marca «Hecho con DataLite»</li>
+            </ul>
+            <a class="btn btn-ghost" href="#herramienta">Crear un dashboard</a>
+          </div>
+          <div class="plan plan-pro">
+            <span class="tag">Próximamente</span>
+            <h3>Pro</h3>
+            <p class="price">US$5 <small>al mes</small></p>
+            <ul>
+              <li>Guardar tableros y volver a abrirlos con un archivo nuevo</li>
+              <li>Compartir un tablero de solo lectura con un enlace</li>
+              <li>Exportaciones sin marca de agua y con tu logo</li>
+              <li>Varias hojas relacionadas en un mismo tablero</li>
+              <li>Sin publicidad</li>
+            </ul>
+            <a class="btn btn-primary" href="https://buymeacoffee.com/jgcohen" rel="noopener" target="_blank" data-track="pro_click">Apoyar y reservar acceso</a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <div class="wrap"><div class="ad-slot" data-slot="landing"></div></div>
+
+    <section class="band band-white" id="guias">
+      <div class="wrap">
+        <h2>Guías para sacarle más a tus datos</h2>
+        <div class="guide-links">
+          <a class="guide-link" href="/guias/tabla-dinamica-online"><h3>Cómo hacer una tabla dinámica online</h3><p>Paso a paso, con ejemplos de suma, conteo y promedio, y los errores más comunes.</p></a>
+          <a class="guide-link" href="/guias/dashboard-en-excel"><h3>Cómo hacer un dashboard a partir de un Excel</h3><p>Qué gráficos elegir, cómo preparar la hoja y cómo presentarlo.</p></a>
+          <a class="guide-link" href="/guias/alternativa-power-bi-gratis"><h3>Alternativas gratis a Power BI</h3><p>Cuándo necesitas Power BI y cuándo te basta algo más simple.</p></a>
+        </div>
+      </div>
+    </section>
+
+    <section class="band" id="preguntas">
+      <div class="wrap faq">
+        <h2>Preguntas frecuentes</h2>
+        <details><summary>¿DataLite sube mis archivos a internet?</summary><p>No. El archivo se lee y se procesa dentro de tu navegador. Ningún dato de tu hoja de cálculo se envía a nuestros servidores. Si cierras la pestaña, la información desaparece.</p></details>
+        <details><summary>¿Es gratis?</summary><p>Sí. Todas las funciones actuales son gratuitas. El sitio se sostiene con publicidad y con aportes voluntarios en Buy Me a Coffee.</p></details>
+        <details><summary>¿Qué formatos acepta?</summary><p>Archivos .xlsx, .xls, .xlsm, .ods y .csv de hasta 30 MB. Si el libro tiene varias hojas, puedes elegir cuál analizar. Los CSV pueden usar coma, punto y coma o tabulación como separador.</p></details>
+        <details><summary>Mis números salen mal, ¿qué hago?</summary><p>Revisa que cada columna tenga un solo tipo de dato y que la primera fila tenga los encabezados. DataLite entiende tanto 1.234,56 como 1,234.56, pero una columna que mezcla texto y números se tratará como texto. En la sección «Tus datos» verás qué tipo detectó para cada columna.</p></details>
+        <details><summary>¿Puedo editar los gráficos en PowerPoint?</summary><p>Sí. La exportación crea gráficos nativos de PowerPoint: puedes cambiar colores, títulos o datos dentro de la presentación.</p></details>
+        <details><summary>¿Reemplaza a Power BI?</summary><p>Para análisis rápidos de una hoja de cálculo, sí. Si necesitas modelos con varias tablas relacionadas, actualización automática desde bases de datos o permisos por usuario, Power BI sigue siendo la herramienta adecuada.</p></details>
+      </div>
+    </section>
+  </div>
+</main>

@@ -1,0 +1,19 @@
+{
+  "name": "datalite",
+  "version": "2.0.0",
+  "description": "Dashboards, gráficos y tablas dinámicas a partir de Excel y CSV, directo en el navegador.",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "bundle": "node build.mjs",
+    "serve": "npx serve ."
+  },
+  "devDependencies": {
+    "esbuild": "^0.25.0",
+    "pptxgenjs": "^4.0.1",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0"
+  },
+  "author": "Juan Cohen (jgcohen)",
+  "license": "UNLICENSED"
+}
