@@ -362,9 +362,11 @@ function Dashboard({ ds, onReset, onSheet }) {
     track('filtro_clic');
   }, []);
 
+  const isRate = cfg.metric >= 0 && /(%|porcentaje|tasa|bsw|ratio|promedio|precio|unitari|edad)/i.test(columns[cfg.metric]?.name || '');
   const kpis = [
     { label: filters.length ? `Filas filtradas de ${rows.length.toLocaleString('es-CO')}` : 'Filas', value: fRows.length.toLocaleString('es-CO') },
-    st && { label: `Total ${columns[cfg.metric].name}`, value: fmtShort(st.sum) },
+    // Porcentajes, tasas y precios no se suman: se muestra el mínimo en lugar del total
+    st && (isRate ? { label: `Mínimo ${columns[cfg.metric].name}`, value: fmtShort(st.min) } : { label: `Total ${columns[cfg.metric].name}`, value: fmtShort(st.sum) }),
     st && { label: `Promedio ${columns[cfg.metric].name}`, value: fmtShort(st.avg) },
     st ? { label: `Máximo ${columns[cfg.metric].name}`, value: fmtShort(st.max) } : { label: `Categorías en ${columns[cfg.group].name}`, value: view.fullCount.toLocaleString('es-CO') },
   ].filter(Boolean);

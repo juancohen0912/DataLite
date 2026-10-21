@@ -38,8 +38,7 @@ Edita siempre en `src/` y vuelve a ejecutar `npm run bundle`; no edites los .htm
 
 ## Seguridad
 
-- Cabeceras HSTS, `X-Frame-Options: DENY`, `nosniff`, `Permissions-Policy` restrictiva y CSP (`object-src 'none'`, `frame-ancestors 'none'`, `base-uri 'self'`).
-- La CSP no restringe orígenes de scripts porque AdSense no es compatible con listas de dominios permitidos; los scripts propios se sirven desde el mismo dominio.
+- Cabeceras HSTS, `X-Frame-Options: DENY`, `nosniff`, `Permissions-Policy` restrictiva, CORS limitado al propio dominio y CSP con lista blanca: scripts solo del propio dominio y de Google AdSense (ver `vercel.json`). Si AdSense agrega un dominio nuevo, revisa la consola del navegador y súmalo a la CSP.
 - Límite de 30 MB y 300.000 filas por archivo, y protección contra archivos comprimidos maliciosos (zip bombs).
 - El lector y escritor de Excel es propio (`src/lib/xlsx.js`, con JSZip empaquetado): la app no ejecuta código de servidores externos. Los .xls antiguos no se leen; se pide guardarlos como .xlsx.
 
