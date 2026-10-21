@@ -56,7 +56,8 @@ export const Chart = forwardRef(function Chart({ type, items, series = [], heigh
       const total = items.reduce((s, d) => s + Math.max(0, d.value), 0) || 1;
       const legendSide = width >= 520;
       const legendW = legendSide ? Math.min(240, width * 0.4) : 0;
-      const ch = legendSide ? height : height - Math.min(items.length, 8) * 22 - 16;
+      const maxBelow = 6;
+      const ch = legendSide ? height : height - Math.ceil(Math.min(items.length, maxBelow) / 2) * 22 - 16;
       const R = Math.max(40, Math.min((width - legendW) / 2, ch / 2) - 12);
       const cx = legendSide ? (width - legendW) / 2 : width / 2, cy = Math.max(R + 8, ch / 2);
       const inner = type === 'donut' ? R * 0.58 : 0;
@@ -71,7 +72,7 @@ export const Chart = forwardRef(function Chart({ type, items, series = [], heigh
         a0 = a1;
         return { d, i, path, frac, lx, ly };
       });
-      const legendRows = items.slice(0, legendSide ? 14 : 8);
+      const legendRows = items.slice(0, legendSide ? 14 : maxBelow);
       return (
         <g>
           {arcs.map(({ d, i, path, frac, lx, ly }) => (
