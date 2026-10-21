@@ -27,7 +27,8 @@ await build({
 await build({ entryPoints: [out('src/styles.css')], bundle: true, minify: true, outfile: out('assets/styles.css'), logLevel: 'warning' });
 
 const hash = (f) => createHash('sha256').update(readFileSync(out(f))).digest('hex').slice(0, 10);
-const V = { css: hash('assets/styles.css'), app: hash('assets/js/app.js'), consent: hash('assets/js/consent.js') };
+const V = { css: hash('assets/styles.css'), app: hash('assets/js/app.js'), consent: hash('assets/js/consent.js'),
+  mp4: hash('assets/video/demo.mp4'), webm: hash('assets/video/demo.webm'), poster: hash('assets/video/demo-poster.jpg') };
 
 // ---------------- Plantilla ----------------
 const header = `
@@ -139,7 +140,7 @@ function walk(dir, rel = '') {
     const m = raw.match(/^<!--\s*([\s\S]*?)\s*-->\n?/);
     if (!m) throw new Error(`Falta el encabezado JSON en ${rel}${f.name}`);
     const meta = JSON.parse(m[1]);
-    let body = raw.slice(m[0].length);
+    let body = raw.slice(m[0].length).replace(/\{\{v:(\w+)\}\}/g, (_, k) => V[k] || '');
     const slug = f.name.replace(/\.html$/, '');
     const path = slug === 'index' ? `/${rel}` : `/${rel}${slug}`;
     const target = out(`${rel}${f.name}`);

@@ -487,6 +487,7 @@ function App() {
 
   useEffect(() => {
     document.body.classList.toggle('has-data', !!ds);
+    if (ds) document.getElementById('demo-video')?.pause();
     if (ds) top.current?.scrollIntoView({ block: 'start' });
   }, [!!ds]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -524,6 +525,58 @@ function App() {
     </div>
   );
 }
+
+// ---------------------------------------------------------------- Video de demostración
+
+function initDemo() {
+  const fig = document.querySelector('.demo');
+  const video = document.getElementById('demo-video');
+  if (!fig || !video) return;
+  const toggle = fig.querySelector('.demo-toggle');
+  const bar = fig.querySelector('.demo-progress i');
+  const steps = [...fig.querySelectorAll('.demo-steps button')];
+  const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  let userPaused = false, tracked = false;
+
+  const sync = () => {
+    const playing = !video.paused;
+    fig.classList.toggle('is-playing', playing);
+    toggle.setAttribute('aria-label', playing ? 'Pausar la demostración' : 'Reproducir la demostración');
+  };
+  const play = () => video.play().catch(() => {});
+  const userPlay = () => { userPaused = false; play(); if (!tracked) { tracked = true; track('demo_video'); } };
+  const togglePlay = () => { if (video.paused) userPlay(); else { userPaused = true; video.pause(); } };
+
+  video.addEventListener('play', sync);
+  video.addEventListener('pause', sync);
+  video.addEventListener('click', togglePlay);
+  toggle.addEventListener('click', togglePlay);
+  fig.querySelector('.demo-full')?.addEventListener('click', () => {
+    const el = video.requestFullscreen ? video : video.webkitEnterFullscreen ? video : null;
+    if (!el) return;
+    userPlay();
+    if (video.requestFullscreen) video.requestFullscreen().catch(() => {}); else video.webkitEnterFullscreen();
+    track('demo_pantalla_completa');
+  });
+  video.addEventListener('timeupdate', () => {
+    const t = video.currentTime;
+    if (video.duration) bar.style.width = `${(t / video.duration) * 100}%`;
+    let active = -1;
+    steps.forEach((s, i) => { if (t >= +s.dataset.t) active = i; });
+    if (t >= 31) active = -1; // tarjeta del autor
+    steps.forEach((s, i) => s.classList.toggle('on', i === active));
+  });
+  steps.forEach((s) => s.addEventListener('click', () => { video.currentTime = +s.dataset.t; userPlay(); }));
+
+  // Reproduce en silencio solo cuando está a la vista y si la persona no prefiere menos movimiento.
+  if (!reduced && 'IntersectionObserver' in window) {
+    new IntersectionObserver(([e]) => {
+      if (e.isIntersecting && !userPaused && !document.body.classList.contains('has-data')) play();
+      else if (!e.isIntersecting) video.pause();
+    }, { threshold: 0.5 }).observe(video);
+  }
+}
+initDemo();
 
 const mount = document.getElementById('tool');
 if (mount) {

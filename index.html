@@ -25,11 +25,12 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:wght@400;500;600;700;800&display=swap">
-<link rel="stylesheet" href="/assets/styles.css?v=9de845744f">
+<link rel="stylesheet" href="/assets/styles.css?v=a500f8834b">
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"WebApplication","name":"DataLite","url":"https://data-lite.vercel.app/","applicationCategory":"BusinessApplication","operatingSystem":"Cualquiera (navegador web)","inLanguage":"es","description":"Herramienta gratuita para crear dashboards, gráficos y tablas dinámicas a partir de archivos Excel y CSV directamente en el navegador.","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"featureList":["Tablas dinámicas","Gráficos de barras, líneas, área, torta y dona","Filtros interactivos","Exportación a PowerPoint con gráficos editables","Exportación a PNG, PDF y Excel","Procesamiento local sin subir archivos"],"author":{"@type":"Person","name":"Juan Cohen"}}</script>
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"¿DataLite sube mis archivos a internet?","acceptedAnswer":{"@type":"Answer","text":"No. El archivo se lee y se procesa dentro de tu navegador. Ningún dato de tu hoja de cálculo se envía a nuestros servidores."}},{"@type":"Question","name":"¿Es gratis?","acceptedAnswer":{"@type":"Answer","text":"Sí. Todas las funciones actuales son gratuitas. El sitio se sostiene con publicidad y aportes voluntarios."}},{"@type":"Question","name":"¿Qué formatos acepta?","acceptedAnswer":{"@type":"Answer","text":"Archivos .xlsx, .xls, .xlsm, .ods y .csv de hasta 30 MB. Si el libro tiene varias hojas, puedes elegir cuál analizar."}},{"@type":"Question","name":"¿Puedo editar los gráficos en PowerPoint?","acceptedAnswer":{"@type":"Answer","text":"Sí. La exportación a PowerPoint crea gráficos nativos que puedes editar, cambiar de color o actualizar dentro de PowerPoint."}},{"@type":"Question","name":"¿Reemplaza a Power BI?","acceptedAnswer":{"@type":"Answer","text":"Para análisis rápidos de una hoja de cálculo, sí. Si necesitas modelos de datos con varias tablas relacionadas, actualización automática o seguridad por usuario, Power BI sigue siendo la herramienta adecuada."}}]}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"VideoObject","name":"Cómo convertir un Excel en dashboard con DataLite","description":"Demostración de 35 segundos: subir un Excel, obtener el tablero automático, filtrar con un clic y descargar el reporte en PowerPoint o PDF.","thumbnailUrl":["https://data-lite.vercel.app/assets/video/demo-poster.jpg"],"uploadDate":"2026-10-20T21:30:00-05:00","duration":"PT35S","contentUrl":"https://data-lite.vercel.app/assets/video/demo.mp4","embedUrl":"https://data-lite.vercel.app/","inLanguage":"es","author":{"@type":"Person","name":"Juan Cohen"},"hasPart":[{"@type":"Clip","name":"Subir el archivo","startOffset":3,"endOffset":6,"url":"https://data-lite.vercel.app/#t=3"},{"@type":"Clip","name":"Tablero automático","startOffset":6,"endOffset":11,"url":"https://data-lite.vercel.app/#t=6"},{"@type":"Clip","name":"Filtrar con un clic","startOffset":11,"endOffset":22,"url":"https://data-lite.vercel.app/#t=11"},{"@type":"Clip","name":"Descargar en PowerPoint o PDF","startOffset":22,"endOffset":31,"url":"https://data-lite.vercel.app/#t=22"},{"@type":"Clip","name":"Sobre el autor","startOffset":31,"endOffset":35,"url":"https://data-lite.vercel.app/#t=31"}]}</script>
 <script defer src="/assets/js/consent.js?v=4410d316b2"></script>
-<script type="module" src="/assets/js/app.js?v=4099ad0735"></script>
+<script type="module" src="/assets/js/app.js?v=bcb09d2ffe"></script>
 </head>
 <body>
 
@@ -54,12 +55,34 @@
       <div class="hero-copy">
         <h1>Tu Excel, convertido en dashboard<span class="cell-ref">=A1:F9</span></h1>
         <p class="hero-lead">Sube una hoja de cálculo y DataLite arma los gráficos, la tabla dinámica y los filtros por ti. Sin instalar nada, sin crear cuenta y sin que tus datos salgan de tu computador.</p>
-        <ul class="hero-points">
-          <li>Detecta fechas, categorías y valores automáticamente</li>
-          <li>Haz clic en un gráfico y todo el tablero se filtra</li>
-          <li>Exporta a PowerPoint con gráficos editables</li>
-        </ul>
       </div>
+      <figure class="demo" aria-labelledby="demo-title">
+        <div class="demo-frame">
+          <video id="demo-video" muted playsinline loop preload="metadata" poster="/assets/video/demo-poster.jpg?v=335648bc6e" aria-describedby="demo-title">
+            <source src="/assets/video/demo.webm?v=b299f6f3aa" type="video/webm">
+            <source src="/assets/video/demo.mp4?v=ccec90b14f" type="video/mp4">
+          </video>
+          <button type="button" class="demo-toggle" aria-label="Reproducir la demostración">
+            <svg class="i-play" viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><path d="M4 2.5v11l9-5.5z" fill="currentColor"/></svg>
+            <svg class="i-pause" viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><path d="M4 2.5h3v11H4zM9 2.5h3v11H9z" fill="currentColor"/></svg>
+            <span>Ver demo</span>
+          </button>
+          <button type="button" class="demo-full" aria-label="Ver la demostración en pantalla completa">
+            <svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><path d="M2 6V2h4M10 2h4v4M14 10v4h-4M6 14H2v-4" fill="none" stroke="currentColor" stroke-width="1.8"/></svg>
+          </button>
+          <div class="demo-progress" aria-hidden="true"><i></i></div>
+        </div>
+        <figcaption>
+          <p id="demo-title" class="demo-title">Mira cómo funciona en 35 segundos</p>
+          <ol class="demo-steps">
+            <li><button type="button" data-t="3"><span>Sube tu archivo</span><small>0:03</small></button></li>
+            <li><button type="button" data-t="6.5"><span>Recibe el tablero</span><small>0:06</small></button></li>
+            <li><button type="button" data-t="11.5"><span>Filtra con un clic</span><small>0:11</small></button></li>
+            <li><button type="button" data-t="22.5"><span>Descarga PPTX o PDF</span><small>0:22</small></button></li>
+          </ol>
+          <p class="demo-author">Creado por <a href="/acerca">Juan Cohen</a>, ingeniero en Bogotá. Si te ahorra tiempo, <a href="https://buymeacoffee.com/jgcohen" rel="noopener" target="_blank">invítale un café</a>.</p>
+        </figcaption>
+      </figure>
       <div id="tool">
         <noscript><p class="error">DataLite necesita JavaScript activado para leer tu archivo en el navegador.</p></noscript>
         <div class="sheet" aria-busy="true"><div class="sheet-body"><p class="sheet-title">Cargando la herramienta…</p></div></div>
