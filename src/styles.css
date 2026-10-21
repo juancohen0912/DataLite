@@ -19,7 +19,8 @@
 }
 *, *::before, *::after { box-sizing: border-box; }
 html { -webkit-text-size-adjust: 100%; scroll-padding-top: 80px; }
-body { margin: 0; background: var(--paper); color: var(--ink); font: 400 16px/1.55 var(--font); font-feature-settings: 'tnum' 1; }
+body { margin: 0; background: var(--paper); color: var(--ink); font: 400 16px/1.55 var(--font); }
+td.num, th.num, .kpi-v, .demo-steps small { font-variant-numeric: tabular-nums; }
 img, svg { max-width: 100%; }
 a { color: var(--pivot-ink); text-underline-offset: 3px; }
 a:hover { color: var(--pivot); }
