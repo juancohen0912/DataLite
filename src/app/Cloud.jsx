@@ -132,7 +132,7 @@ export function ProModal({ reason, account, onClose, onTrial }) {
         </ul>
         {pro && <p>Tu plan está activo hasta el <b>{fmtDate(account.status.plan?.period_end)}</b>. Si pagas otra vez, se suman 30 días al final.</p>}
         <p className="muted small">El pago se hace en Wompi (Bancolombia) con tarjeta, PSE, Nequi o Bancolombia. DataLite no recibe ni guarda los datos de tu tarjeta. Si tu plan vence, tus proyectos se conservan y siguen visibles; solo se pausa la edición.</p>
-        {state === 'unavailable' && <p className="callout-sm">El pago en línea se está habilitando. Escríbenos desde la página <a href="/acerca">Acerca de</a> y activamos tu plan manualmente.</p>}
+        {state === 'unavailable' && <p className="callout-sm">El pago en línea se está habilitando. Escríbenos a <a href="mailto:datalitecontact@gmail.com">datalitecontact@gmail.com</a> y activamos tu plan manualmente.</p>}
         {error && state !== 'unavailable' && <p className="error" role="alert">{error}</p>}
         {canTrial && (
           <div className="trial-box">
@@ -355,7 +355,7 @@ export function EmpresaModal({ account, onClose, onChanged }) {
           <Field label="Nombre de la empresa"><input className="input" value={name} maxLength={120} onChange={(e) => setName(e.target.value)} placeholder="Mi Empresa SAS" /></Field>
           {seatPicker(5)}
           {price}
-          <p className="muted small">De 5 a 9 usuarios: {cop(16900)} por usuario al mes. De 10 a 20: {cop(14900)}. Un solo pago por 12 meses con Wompi (tarjeta, PSE, Nequi o Bancolombia), sin renovación automática. ¿Más de 20 usuarios? Escríbenos desde <a href="/acerca">Acerca de</a>.</p>
+          <p className="muted small">De 5 a 9 usuarios: {cop(16900)} por usuario al mes. De 10 a 20: {cop(14900)}. Un solo pago por 12 meses con Wompi (tarjeta, PSE, Nequi o Bancolombia), sin renovación automática. ¿Más de 20 usuarios? Escríbenos a <a href="mailto:datalitecontact@gmail.com">datalitecontact@gmail.com</a>.</p>
           {error && <p className="error" role="alert">{error}</p>}
           <button type="submit" className="btn btn-primary" disabled={busy}>{busy ? 'Abriendo Wompi…' : `Pagar ${cop(orgYearTotal(seats))} con Wompi`}</button>
         </form>
