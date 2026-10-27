@@ -44,6 +44,7 @@ const header = `
       <a href="/guias/" class="nav-keep">Guías</a>
       <a href="/#planes">Planes</a>
       <a class="nav-cta" href="/#herramienta">Crear dashboard</a>
+      <span id="account-slot" class="account-slot"></span>
     </nav>
   </div>
 </header>`;
@@ -81,7 +82,7 @@ const footer = `
         </ul>
       </div>
     </div>
-    <p class="foot-legal">© <span data-year>2026</span> DataLite, creado por Juan Cohen (jgcohen). El procesamiento de archivos ocurre por completo en tu dispositivo. Los resultados son informativos: verifica tus datos antes de tomar decisiones.</p>
+    <p class="foot-legal">© <span data-year>2026</span> DataLite, creado por Juan Cohen (jgcohen). El análisis de tus archivos ocurre en tu dispositivo; solo los proyectos que guardas con DataLite Pro se almacenan cifrados en la nube. Los resultados son informativos: verifica tus datos antes de tomar decisiones.</p>
   </div>
 </footer>`;
 
