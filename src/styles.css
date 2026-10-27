@@ -485,6 +485,8 @@ body.modal-open { overflow: hidden; }
 .stack { display: flex; flex-direction: column; gap: 14px; }
 .stack > p { margin: 0; }
 .callout-sm { background: var(--pivot-wash); border-left: 3px solid var(--pivot); padding: 10px 12px; border-radius: 0 var(--r-sm) var(--r-sm) 0; font-size: 14px; }
+.trial-box { border: 1px dashed var(--marker); background: #fffaea; border-radius: var(--r-md); padding: 12px 14px; display: flex; flex-direction: column; gap: 10px; }
+.trial-box p { margin: 0; font-size: 14px; }
 .price-line { font-size: 15px; }
 .price-line b { font-size: 30px; letter-spacing: -0.02em; margin-right: 4px; }
 .ticks { list-style: none; padding: 0; margin: 0; display: grid; gap: 8px; font-size: 14.5px; }

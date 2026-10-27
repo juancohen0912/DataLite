@@ -276,10 +276,42 @@ function App() {
 
   const openProjects = async () => { if (await gate('account', 'Inicia sesión para ver tus proyectos.')) setModal({ type: 'projects' }); };
 
+  // ---------- Descargas: analizar no pide cuenta; descargar sí. Gratis: límite mensual contado en la base.
+  async function onExport(kind) {
+    if (!(await gate('account', 'Crea tu cuenta gratis para descargar: incluye 3 descargas al mes. Analizar sigue sin cuenta.'))) {
+      track('descarga_pide_cuenta', { tipo: kind });
+      return false;
+    }
+    try {
+      const r = await rpc('dl_use_export', { p_kind: kind });
+      setAccount((a) => (a.status ? { ...a, status: { ...a.status, exports: { used: r.used, limit: r.limit } } } : a));
+      if (r.allowed) return true;
+      track('limite_descargas');
+      setModal({ type: 'pro', reason: `Usaste tus ${r.limit} descargas gratis de este mes. Con Pro descargas sin límite y sin marca de agua.` });
+      return false;
+    } catch (e) {
+      if (e.status === 404) return true; // la base todavía no tiene el límite (migración pendiente): no bloquear
+      if (e.kind === 'login') setModal({ type: 'login', reason: e.message });
+      else if (e.kind === 'consent') setModal({ type: 'consent', level: 'account', reason: e.message });
+      else showToast(e.message, 'error');
+      return false;
+    }
+  }
+
+  // Prueba de Pro (una por cuenta). Los errores los muestra el modal.
+  async function onTrial() {
+    const r = await rpc('dl_start_trial');
+    await refreshAccount();
+    setModal(null);
+    track('prueba_pro');
+    showToast(`Tu prueba de DataLite Pro quedó activa hasta el ${new Date(r.ends_at).toLocaleDateString('es-CO', { day: 'numeric', month: 'long' })}.`);
+  }
+
   const cloud = cloudOn ? {
     project, role: project?.role || (ds ? 'owner' : null), pro: !!account.status?.pro, saving,
     editRequested: !!project?.edit_requested,
-    onSave, onShare, onOpenProjects: openProjects, onRequestEdit,
+    signedIn: !!account.session, exports: account.status?.exports || null, trialAvailable: account.status?.trial?.available ?? !account.session,
+    onSave, onShare, onOpenProjects: openProjects, onRequestEdit, onExport, onPro: () => openPro.current(),
   } : null;
   if (cloud && project && !project.can_edit && project.role !== 'viewer') cloud.role = 'viewer';
 
@@ -294,7 +326,7 @@ function App() {
       {cloudOn && <AccountSlot account={account} onLogin={() => setModal({ type: 'login' })} onOpenProjects={openProjects} onPro={async () => { if (await gate('account', 'Inicia sesión para activar DataLite Pro.')) setModal({ type: 'pro' }); }} onSignOut={async () => { await signOut(); setAccount({ session: null, status: null }); showToast('Cerraste sesión.'); }} />}
       {modal?.type === 'login' && <LoginModal reason={modal.reason} onClose={() => setModal(null)} />}
       {modal?.type === 'consent' && <ConsentModal onClose={() => setModal(null)} onDone={async () => { const st = await refreshAccount(); const then = pending.current; pending.current = null; setModal(modal.level === 'pro' && !st?.pro ? { type: 'pro', reason: modal.reason } : null); then?.(); }} />}
-      {modal?.type === 'pro' && <ProModal reason={modal.reason} account={account} onClose={() => setModal(null)} />}
+      {modal?.type === 'pro' && <ProModal reason={modal.reason} account={account} onTrial={onTrial} onClose={() => setModal(null)} />}
       {modal?.type === 'name' && <NameModal title={modal.title} initial={modal.initial} onSubmit={modal.submit} onClose={() => { modal.cancel?.(); setModal(null); }} />}
       {modal?.type === 'projects' && <ProjectsModal currentId={project?.id} onOpen={openProject} onDelete={onDeleteProject} onClose={() => setModal(null)} />}
       {modal?.type === 'share' && <ShareModal project={modal.project} account={account} onClose={() => { setModal(null); refreshAccount(); }} />}

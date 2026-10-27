@@ -15,6 +15,9 @@ const ago = (iso) => {
 
 // ------------------------------------------------------------------ Botón de cuenta (en el encabezado)
 
+/** «Plan gratis · 1 de 3 descargas este mes» */
+const planHint = (status) => (status?.exports ? `Plan gratis · ${status.exports.used} de ${status.exports.limit} descargas este mes` : 'Plan gratis');
+
 export function AccountSlot({ account, onLogin, onOpenProjects, onPro, onSignOut }) {
   const [el, setEl] = useState(null);
   useEffect(() => { setEl(document.getElementById('account-slot')); }, []);
@@ -24,9 +27,9 @@ export function AccountSlot({ account, onLogin, onOpenProjects, onPro, onSignOut
   ) : (
     <Menu label={<span className="nav-user"><span className="avatar" aria-hidden="true">{(account.status?.email || account.session.email || '?')[0].toUpperCase()}</span><span className="nav-user-txt">{account.status?.pro ? 'Pro' : 'Mi cuenta'}</span>{account.status?.pending_requests > 0 && <span className="count" title="Solicitudes de edición">{account.status.pending_requests}</span>}</span>}
       buttonClass="nav-login" items={[
-        { label: account.status?.email || account.session.email, hint: account.status?.pro ? `DataLite Pro hasta el ${fmtDate(account.status.plan?.period_end)}` : 'Plan gratis', onClick: () => {}, disabled: true },
+        { label: account.status?.email || account.session.email, hint: account.status?.trial?.active ? `Prueba de Pro hasta el ${fmtDate(account.status.plan?.period_end)}` : account.status?.pro ? `DataLite Pro hasta el ${fmtDate(account.status.plan?.period_end)}` : planHint(account.status), onClick: () => {}, disabled: true },
         { label: 'Mis proyectos', onClick: onOpenProjects },
-        !account.status?.pro && { label: `Obtener Pro (${PRICE} al mes)`, onClick: onPro },
+        !account.status?.pro && { label: account.status?.trial?.available ? `Probar Pro gratis ${account.status.trial.days} días` : `Obtener Pro (${PRICE} al mes)`, onClick: onPro },
         account.status?.pro && { label: 'Renovar o extender 30 días', onClick: onPro },
         { label: 'Cerrar sesión', onClick: onSignOut },
       ]} />
@@ -61,7 +64,7 @@ export function LoginModal({ reason, onClose }) {
       ) : (
         <form className="stack" onSubmit={submit} noValidate>
           {reason && <p className="callout-sm">{reason}</p>}
-          <p className="muted">Sin contraseñas: te enviamos un enlace al correo. La cuenta es gratis; Pro solo se paga si quieres guardar y compartir.</p>
+          <p className="muted">Sin contraseñas: te enviamos un enlace al correo. La cuenta es gratis e incluye 3 descargas al mes. Pro se paga solo si quieres descargas ilimitadas, guardar y compartir.</p>
           <Field label="Correo electrónico">
             <input className="input" type="email" autoComplete="email" inputMode="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="tu@correo.com" required />
           </Field>
@@ -99,9 +102,15 @@ export function ConsentModal({ onDone, onClose }) {
 
 // ------------------------------------------------------------------ Plan Pro
 
-export function ProModal({ reason, account, onClose }) {
+export function ProModal({ reason, account, onClose, onTrial }) {
   const [state, setState] = useState('idle');
   const [error, setError] = useState('');
+  async function trial() {
+    setState('trial'); setError('');
+    try { await onTrial(); } catch (e) { setError(e.message); setState('idle'); }
+  }
+  const trialInfo = account.status?.trial;
+  const canTrial = !account.status?.pro && trialInfo?.available && onTrial;
   async function pay() {
     setState('loading'); setError('');
     try { const url = await startCheckout(); track('checkout_inicio'); window.location.assign(url); }
@@ -117,13 +126,19 @@ export function ProModal({ reason, account, onClose }) {
           <li>Guarda hasta {account.status?.limits?.max_projects ?? 50} tableros en la nube, con sus datos y fórmulas</li>
           <li>Compártelos con hasta {account.status?.limits?.max_members ?? 10} personas por proyecto: ver es gratis para ellas</li>
           <li>Tú decides quién puede editar; los demás pueden pedirte permiso</li>
-          <li>Exportaciones sin marca de agua y sin publicidad</li>
+          <li>Descargas ilimitadas, sin marca de agua y sin publicidad</li>
         </ul>
         {pro && <p>Tu plan está activo hasta el <b>{fmtDate(account.status.plan?.period_end)}</b>. Si pagas otra vez, se suman 30 días al final.</p>}
         <p className="muted small">El pago se hace en Wompi (Bancolombia) con tarjeta, PSE, Nequi o Bancolombia. DataLite no recibe ni guarda los datos de tu tarjeta. Si tu plan vence, tus proyectos se conservan y siguen visibles; solo se pausa la edición.</p>
         {state === 'unavailable' && <p className="callout-sm">El pago en línea se está habilitando. Escríbenos desde la página <a href="/acerca">Acerca de</a> y activamos tu plan manualmente.</p>}
         {error && state !== 'unavailable' && <p className="error" role="alert">{error}</p>}
-        <button type="button" className="btn btn-primary" onClick={pay} disabled={state === 'loading'}>{state === 'loading' ? 'Abriendo Wompi…' : pro ? 'Extender 30 días' : `Pagar ${PRICE} con Wompi`}</button>
+        {canTrial && (
+          <div className="trial-box">
+            <p><b>Pruébalo gratis {trialInfo.days} días.</b> Sin medios de pago. Al terminar vuelves al plan gratis; tus proyectos quedan guardados en solo lectura.</p>
+            <button type="button" className="btn btn-primary" onClick={trial} disabled={state === 'trial' || state === 'loading'}>{state === 'trial' ? 'Activando…' : `Probar ${trialInfo.days} días gratis`}</button>
+          </div>
+        )}
+        <button type="button" className={canTrial ? 'btn btn-ghost' : 'btn btn-primary'} onClick={pay} disabled={state === 'loading' || state === 'trial'}>{state === 'loading' ? 'Abriendo Wompi…' : pro ? 'Extender 30 días' : `Pagar ${PRICE} con Wompi`}</button>
       </div>
     </Modal>
   );

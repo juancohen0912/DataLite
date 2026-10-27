@@ -89,14 +89,18 @@ export function Dashboard({ ds, initial, onReset, onSheet, cloud }) {
   const resetBoard = () => { setVisuals(autoVisuals(model, suggest(model.columns, model.rows))); setEditingId(null); };
 
   const watermark = !cloud?.pro;
+  // Descargar pide cuenta y descuenta del cupo gratis (lo decide la app: cloud.onExport)
+  const allowExport = async (kind) => (cloud?.onExport ? cloud.onExport(kind) : true);
   async function pngOf(id) {
     const i = visuals.findIndex((v) => v.id === id);
     const svg = refFor(id).current?.svg?.();
     if (!svg) { showToast('Este visual no se puede descargar como imagen. Usa Excel o PowerPoint.', 'warn'); return; }
+    if (!(await allowExport('png'))) return;
     downloadDataUrl(await svgToPng(svg, { title: views[i].title, watermark: watermark ? 'Hecho con DataLite · data-lite.vercel.app' : '' }), `DataLite_${safeName(views[i].title)}.png`);
     track('exportar', { tipo: 'png' });
   }
   async function run(kind) {
+    if (!(await allowExport(kind))) return;
     setBusy(kind);
     try {
       const name = cloud?.project?.name || ds.fileName;
@@ -119,6 +123,13 @@ export function Dashboard({ ds, initial, onReset, onSheet, cloud }) {
     if (ok) setDirty(false);
   }
   useEffect(() => { if (cloud) cloud.registerGetState?.(getState); });
+
+  const left = cloud?.exports ? Math.max(0, cloud.exports.limit - cloud.exports.used) : null;
+  const exportNote = !cloud || cloud.pro ? null
+    : !cloud.signedIn ? 'Descargar requiere una cuenta gratis'
+      : left === null ? null
+        : left === 0 ? `Usaste tus ${cloud.exports.limit} descargas gratis de este mes`
+          : `Te ${left === 1 ? 'queda 1 descarga gratis' : `quedan ${left} descargas gratis`} este mes`;
 
   const editing = visuals.find((v) => v.id === editingId);
   const editIndex = visuals.findIndex((v) => v.id === editingId);
@@ -171,6 +182,7 @@ export function Dashboard({ ds, initial, onReset, onSheet, cloud }) {
             <button type="button" className="btn btn-ghost" onClick={cloud.onRequestEdit} disabled={cloud.editRequested}>{cloud.editRequested ? 'Permiso solicitado' : 'Pedir permiso para editar'}</button>
           )}
           <Menu label={busy ? 'Exportando…' : 'Exportar'} buttonClass="btn btn-primary" items={[
+            exportNote && { label: exportNote, onClick: () => {}, disabled: true },
             { label: 'PowerPoint', hint: 'Un gráfico editable por diapositiva', onClick: () => run('pptx') },
             { label: 'Excel', hint: 'Una hoja por visual, más tus datos con las columnas calculadas', onClick: () => run('xlsx') },
             { label: 'PDF', hint: 'Usa «Guardar como PDF» al imprimir', onClick: () => run('pdf') },
@@ -227,8 +239,10 @@ export function Dashboard({ ds, initial, onReset, onSheet, cloud }) {
 
       {!cloud?.pro && (
         <aside className="pro-nudge">
-          <p><b>DataLite Pro:</b> guarda tus tableros en la nube, compártelos con tu equipo con permisos de edición y exporta sin marca de agua. $19.900 al mes.</p>
-          <a className="btn btn-ghost btn-sm" href="/#planes" onClick={() => track('interes_pro')}>Ver planes</a>
+          <p><b>DataLite Pro:</b> guarda tus tableros en la nube, compártelos con tu equipo con permisos de edición y descarga sin límite ni marca de agua. $19.900 al mes{cloud?.trialAvailable ? '; pruébalo gratis 14 días' : ''}.</p>
+          {cloud?.onPro
+            ? <button type="button" className="btn btn-ghost btn-sm" onClick={() => { track('interes_pro'); cloud.onPro(); }}>Ver Pro</button>
+            : <a className="btn btn-ghost btn-sm" href="/#planes" onClick={() => track('interes_pro')}>Ver planes</a>}
         </aside>
       )}
 

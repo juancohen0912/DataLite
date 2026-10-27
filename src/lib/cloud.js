@@ -2,7 +2,7 @@
 // llamadas a funciones protegidas por RLS y datos del proyecto comprimidos en Storage privado.
 import { CLOUD } from '../config.js';
 
-export const CONSENT_VERSION = '2026-10-26';
+export const CONSENT_VERSION = '2026-10-27';
 const SESSION_KEY = 'dl-session-v1';
 const PKCE_KEY = 'dl-pkce-v1';
 
@@ -97,7 +97,7 @@ export async function signOut() {
 
 // ------------------------------------------------------------------ Funciones de la base
 
-const KINDS = { consent: 'consent', pro: 'pro', limit: 'limit', conflict: 'conflict', viewer: 'viewer', owner_not_pro: 'owner_not_pro', notfound: 'notfound' };
+const KINDS = { consent: 'consent', pro: 'pro', limit: 'limit', conflict: 'conflict', viewer: 'viewer', owner_not_pro: 'owner_not_pro', notfound: 'notfound', trial_used: 'trial_used', rate: 'rate' };
 
 export async function rpc(fn, args = {}) {
   const token = await accessToken();
