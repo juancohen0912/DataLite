@@ -9,15 +9,24 @@ export default {
     if (!wompiReady()) return fail('El pago en línea aún no está habilitado.', 503);
     let body;
     try { body = await request.json(); } catch { return fail('Solicitud no válida.', 400); }
-    if (!body || body.plan !== 'pro') return fail('Plan no válido.', 400);
+    if (!body || !['pro', 'empresa'].includes(body.plan)) return fail('Plan no válido.', 400);
+    const args = { p_plan: body.plan };
+    if (body.plan === 'empresa') {
+      const seats = Number(body.seats);
+      if (!Number.isInteger(seats) || seats < 5 || seats > 20) return fail('El plan Empresa es de 5 a 20 usuarios.', 400);
+      args.p_seats = seats;
+      if (typeof body.orgName === 'string' && body.orgName.trim()) args.p_org_name = body.orgName.trim().slice(0, 120);
+    }
 
     const user = await getUser(request);
     if (!user) return fail('Inicia sesión para continuar.', 401);
 
-    const { data, error } = await rpcAsUser(user, 'dl_create_payment', { p_plan: 'pro' });
+    const { data, error } = await rpcAsUser(user, 'dl_create_checkout', args);
     if (error || !data) {
-      console.error('dl_create_payment_error', error?.code);
+      console.error('dl_create_checkout_error', error?.code);
       if (error?.hint === 'consent') return fail('Acepta la política de privacidad de DataLite para continuar.', 409);
+      // Mensajes de validación de la base (cupos, nombre, permisos): se muestran tal cual
+      if (error?.code === 'P0001' && error.message) return fail(error.message, 422);
       return fail('No pudimos iniciar el pago. Intenta de nuevo en unos minutos.', 500);
     }
     const { reference, amount_in_cents: amount, currency } = data;
