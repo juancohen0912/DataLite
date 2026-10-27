@@ -1,3 +1,4 @@
+import { evalMeasure, finalize } from './formula.js';
 // Lectura, limpieza y agregación de datos. Todo ocurre en el navegador.
 
 export const MAX_FILE_MB = 30;
@@ -242,15 +243,32 @@ export function suggest(columns, rows) {
 
 // ---------- Filtros y agregación ----------
 
+// Filtros: por valores ({col, values}) o por rango de fechas ({col, from, to} en formato AAAA-MM-DD)
+const dayStart = (iso) => { const [y, m, d] = iso.split('-').map(Number); return new Date(y, m - 1, d).getTime(); };
 export function applyFilters(rows, filters) {
-  const active = filters.filter((f) => f.values && f.values.length);
-  if (!active.length) return rows;
-  const sets = active.map((f) => ({ col: f.col, set: new Set(f.values) }));
-  return rows.filter((r) => sets.every(({ col, set }) => set.has(keyOf(r[col]))));
+  const tests = [];
+  for (const f of filters) {
+    if (f.values && f.values.length) { const set = new Set(f.values); tests.push((r) => set.has(keyOf(r[f.col]))); }
+    else if (f.from || f.to) {
+      const lo = f.from ? dayStart(f.from) : -Infinity;
+      const hi = f.to ? dayStart(f.to) + 86400000 : Infinity;
+      tests.push((r) => { const d = r[f.col]; if (!(d instanceof Date)) return false; const t = d.getTime(); return t >= lo && t < hi; });
+    }
+  }
+  if (!tests.length) return rows;
+  return rows.filter((r) => tests.every((t) => t(r)));
 }
 
+export function dateRange(rows, col) {
+  let min = Infinity, max = -Infinity;
+  for (const r of rows) { const d = r[col]; if (d instanceof Date) { const t = d.getTime(); if (t < min) min = t; if (t > max) max = t; } }
+  if (!Number.isFinite(min)) return null;
+  return { min: new Date(min), max: new Date(max) };
+}
+export const isoDay = (d) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+
 export function keyOf(v) {
-  if (v instanceof Date) return v.toISOString().slice(0, 10);
+  if (v instanceof Date) return isoDay(v);
   if (v === null || v === undefined || v === '') return '(vacío)';
   return String(v);
 }
@@ -301,7 +319,8 @@ function finish(acc, agg) {
  * Tabla dinámica: agrupa por una columna (y opcionalmente por una serie) y calcula la métrica.
  * Devuelve { items: [{key,label,value,byS:{}}], series: [nombres], total }
  */
-export function pivot(rows, columns, { group, metric, agg = 'SUM', split = -1, gran = 'month', sort = 'auto', topN = 'ALL', topSeries = 6 }) {
+export function pivot(rows, columns, { group, metric, agg = 'SUM', split = -1, gran = 'month', sort = 'auto', topN = 'ALL', topSeries = 6, measure = null }) {
+  if (measure) return pivotMeasure(rows, columns, { group, split, gran, sort, topN, topSeries, measure });
   const isDate = columns[group]?.type === 'date';
   const metricCol = metric >= 0 ? metric : group;
   const effAgg = metric < 0 ? 'COUNT' : agg;
@@ -368,6 +387,65 @@ export function pivot(rows, columns, { group, metric, agg = 'SUM', split = -1, g
   return { items, series, total: finish(overall, effAgg), fullCount, isDate, agg: effAgg };
 }
 
+// Versión para medidas: cada grupo guarda sus filas y la medida se evalúa sobre ellas (como en Power BI)
+const measureValue = (measure, rows, idx) => { const v = finalize(evalMeasure(measure, rows, idx)); return typeof v === 'number' ? v : 0; };
+function pivotMeasure(rows, columns, { group, split, gran, sort, topN, topSeries, measure }) {
+  const isDate = columns[group]?.type === 'date';
+  const map = new Map();
+  const bySeries = new Map();
+  for (let i = 0; i < rows.length; i++) {
+    const r = rows[i];
+    let key, label;
+    if (isDate) ({ key, label } = dateBucket(r[group], gran));
+    else { key = keyOf(r[group]); label = key; }
+    let g = map.get(key);
+    if (!g) { g = { key, label, idx: [], series: split >= 0 ? new Map() : null }; map.set(key, g); }
+    g.idx.push(i);
+    if (split >= 0) {
+      const s = keyOf(r[split]);
+      let a = g.series.get(s); if (!a) { a = []; g.series.set(s, a); } a.push(i);
+      let t = bySeries.get(s); if (!t) { t = []; bySeries.set(s, t); } t.push(i);
+    }
+  }
+  let series = [];
+  if (split >= 0) {
+    const ranked = [...bySeries.entries()].map(([k, idx]) => [k, measureValue(measure, rows, idx)]).sort((a, b) => b[1] - a[1]);
+    series = ranked.slice(0, topSeries).map((x) => x[0]);
+    if (ranked.length > topSeries) series.push('Otros');
+  }
+  const seriesOf = (seriesMap) => {
+    const byS = Object.create(null);
+    const others = [];
+    for (const [s, idx] of seriesMap) { if (series.includes(s)) byS[s] = measureValue(measure, rows, idx); else others.push(...idx); }
+    if (others.length) byS.Otros = measureValue(measure, rows, others);
+    return byS;
+  };
+  let items = [...map.values()].map((g) => {
+    const it = { key: g.key, label: g.label, value: measureValue(measure, rows, g.idx), _idx: g.idx };
+    if (split >= 0) it.byS = seriesOf(g.series);
+    return it;
+  });
+  if (sort === 'auto') sort = isDate ? 'chrono' : 'value-desc';
+  if (sort === 'chrono') items.sort((a, b) => a.key.localeCompare(b.key, 'es', { numeric: true }));
+  else if (sort === 'label') items.sort((a, b) => a.label.localeCompare(b.label, 'es', { numeric: true }));
+  else if (sort === 'value-asc') items.sort((a, b) => a.value - b.value);
+  else items.sort((a, b) => b.value - a.value);
+  const fullCount = items.length;
+  if (topN !== 'ALL' && !isDate && items.length > +topN) {
+    const tail = items.slice(+topN);
+    const idx = tail.flatMap((x) => x._idx);
+    const other = { key: '__otros__', label: `Otros (${tail.length})`, value: measureValue(measure, rows, idx), isOther: true };
+    if (split >= 0) {
+      const m = new Map();
+      for (const i of idx) { const s = keyOf(rows[i][split]); let a = m.get(s); if (!a) { a = []; m.set(s, a); } a.push(i); }
+      other.byS = seriesOf(m);
+    }
+    items = [...items.slice(0, +topN), other];
+  }
+  for (const it of items) delete it._idx;
+  return { items, series, total: measureValue(measure, rows, null), fullCount, isDate, agg: 'MEASURE' };
+}
+
 function mergeAcc(t, a) {
   t.sum += a.sum; t.count += a.count; t.n += a.n;
   t.min = Math.min(t.min, a.min); t.max = Math.max(t.max, a.max);
@@ -400,6 +478,7 @@ export function fmtShort(v) {
   return fmt(v);
 }
 
+export const AGG_LABELS_ALL = { MEASURE: 'Medida' };
 export const AGG_LABELS = {
   SUM: 'Suma', AVG: 'Promedio', COUNT: 'Conteo', DISTINCT: 'Conteo único', MIN: 'Mínimo', MAX: 'Máximo',
 };

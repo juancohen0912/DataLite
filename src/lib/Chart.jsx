@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useRef, useState, forwardRef, useImperativeH
 import { fmt, fmtShort } from './data.js';
 
 export const PALETTE = ['#0E7A55', '#2F6FDE', '#E2A41B', '#D2554B', '#7A5CC9', '#1B9AA3', '#9A7446', '#C2489B', '#5E8C2E', '#6B7C93'];
-const INK = '#15231D', MUTED = '#5B6B64', GRID = '#E3E9E6', FONT = "'Schibsted Grotesk', system-ui, sans-serif";
+export const INK = '#15231D', MUTED = '#5B6B64', GRID = '#E3E9E6', FONT = "'Schibsted Grotesk', system-ui, sans-serif";
 
 function niceStep(range, count) {
   const raw = range / Math.max(count, 1);
@@ -10,7 +10,7 @@ function niceStep(range, count) {
   const n = raw / mag;
   return (n >= 5 ? 10 : n >= 2 ? 5 : n >= 1 ? 2 : 1) * mag;
 }
-function niceScale(min, max, count = 5) {
+export function niceScale(min, max, count = 5) {
   if (min === max) { max = max === 0 ? 1 : max * 1.2; min = Math.min(0, min); }
   const step = niceStep(max - min, count);
   const lo = Math.floor(min / step) * step, hi = Math.ceil(max / step) * step;
@@ -18,9 +18,9 @@ function niceScale(min, max, count = 5) {
   for (let v = lo; v <= hi + step / 2; v += step) ticks.push(+v.toFixed(10));
   return { lo, hi, ticks };
 }
-const trunc = (s, n) => (s.length > n ? s.slice(0, n - 1) + '…' : s);
+export const trunc = (s, n) => (s.length > n ? s.slice(0, n - 1) + '…' : s);
 
-function useWidth(ref, fallback = 600) {
+export function useWidth(ref, fallback = 600) {
   const [w, setW] = useState(fallback);
   useEffect(() => {
     if (!ref.current) return;
@@ -36,7 +36,7 @@ function useWidth(ref, fallback = 600) {
  * props: type (bar|hbar|line|area|pie|donut), items [{key,label,value,byS}], series [], height,
  *        valueLabel, onSelect(key), selected (Set de keys), compact
  */
-export const Chart = forwardRef(function Chart({ type, items, series = [], height = 360, valueLabel = '', onSelect, selected, compact = false }, ref) {
+export const Chart = forwardRef(function Chart({ type, items, series = [], height = 360, valueLabel = '', onSelect, selected, compact = false, palette = PALETTE }, ref) {
   const box = useRef(null);
   const svgRef = useRef(null);
   const width = useWidth(box);
@@ -44,7 +44,7 @@ export const Chart = forwardRef(function Chart({ type, items, series = [], heigh
   useImperativeHandle(ref, () => ({ svg: () => svgRef.current }), []);
 
   const multi = series.length > 0 && !['pie', 'donut'].includes(type);
-  const colorOf = (i) => PALETTE[i % PALETTE.length];
+  const colorOf = (i) => palette[i % palette.length];
   const isSel = (k) => !selected || selected.size === 0 || selected.has(k);
 
   const content = useMemo(() => {
@@ -215,7 +215,7 @@ export const Chart = forwardRef(function Chart({ type, items, series = [], heigh
         : <line x1={padL} x2={padL + W} y1={padT + H - zero} y2={padT + H - zero} stroke="#9AA8A2" />;
       return <g>{legend}{grid}{axis}{marks}{cats}</g>;
     }
-  }, [items, series, type, width, height, selected, compact]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [items, series, type, width, height, selected, compact, palette]); // eslint-disable-line react-hooks/exhaustive-deps
 
   function sumS(d) { return series.reduce((s, k) => s + Math.max(0, d.byS?.[k] || 0), 0); }
 

@@ -17,8 +17,11 @@ function save(ads) {
   try { localStorage.setItem(KEY, JSON.stringify({ ads, ts: new Date().toISOString() })); } catch { /* almacenamiento bloqueado */ }
 }
 
+// Quien tiene DataLite Pro navega sin publicidad (la marca la escribe la app al validar la cuenta).
+const isPro = () => { try { return localStorage.getItem('dl-plan') === 'pro'; } catch { return false; } };
+
 function loadAds() {
-  if (adsLoaded) return;
+  if (adsLoaded || isPro()) return;
   adsLoaded = true;
   const s = document.createElement('script');
   s.async = true;
@@ -56,7 +59,7 @@ function banner() {
   el.setAttribute('aria-live', 'polite');
   el.setAttribute('aria-label', 'Preferencias de cookies');
   el.innerHTML = `
-    <p>Usamos cookies de Google AdSense para mostrar publicidad que mantiene DataLite gratis. Tus archivos nunca salen de tu navegador.
+    <p>Usamos cookies de Google AdSense para mostrar publicidad que mantiene DataLite gratis. Tus archivos se analizan en tu navegador y no se suben salvo que guardes un proyecto.
     <a href="/cookies">Política de cookies</a>.</p>
     <div class="cb-actions">
       <button type="button" class="btn btn-ghost btn-sm" data-c="no">Solo necesarias</button>
