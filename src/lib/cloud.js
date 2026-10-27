@@ -163,12 +163,19 @@ export async function deleteData(projectId) {
   }).catch(() => null);
 }
 
+// ------------------------------------------------------------------ Plan Empresa: precio (el cobro real lo calcula la base)
+
+/** Precio mensual por usuario según los cupos: 16.900 de 5 a 9 y 14.900 de 10 a 20, pago anual. */
+export const seatMonthPrice = (seats) => (seats >= 10 ? 14900 : 16900);
+export const orgYearTotal = (seats) => seats * seatMonthPrice(seats) * 12;
+
 // ------------------------------------------------------------------ Pagos (funciones del propio sitio)
 
-export async function startCheckout() {
+/** plan: 'pro' | 'empresa' (con seats y orgName para una empresa nueva) */
+export async function startCheckout(plan = 'pro', { seats, orgName } = {}) {
   const token = await accessToken();
   if (!token) throw new CloudError('Inicia sesión para continuar.', 'login', 401);
-  const res = await fetch('/api/pagos/checkout', { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }, body: JSON.stringify({ plan: 'pro' }) });
+  const res = await fetch('/api/pagos/checkout', { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }, body: JSON.stringify(plan === 'empresa' ? { plan, seats, orgName } : { plan: 'pro' }) });
   const data = await res.json().catch(() => ({}));
   if (res.ok && typeof data.url === 'string') {
     const u = new URL(data.url);

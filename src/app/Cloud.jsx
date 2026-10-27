@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { sendMagicLink, rpc, startCheckout, confirmPayment, CONSENT_VERSION, CloudError } from '../lib/cloud.js';
+import { sendMagicLink, rpc, startCheckout, confirmPayment, CONSENT_VERSION, CloudError, seatMonthPrice, orgYearTotal } from '../lib/cloud.js';
 import { Modal, Icon, Field, Menu, track } from './ui.jsx';
 
 const PRICE = '$19.900';
+const cop = (n) => `$${Math.round(n).toLocaleString('es-CO')}`;
 const fmtDate = (iso) => (iso ? new Date(iso).toLocaleDateString('es-CO', { day: 'numeric', month: 'short', year: 'numeric' }) : '');
 const ago = (iso) => {
   const s = (Date.now() - new Date(iso).getTime()) / 1000;
@@ -18,7 +19,7 @@ const ago = (iso) => {
 /** «Plan gratis · 1 de 3 descargas este mes» */
 const planHint = (status) => (status?.exports ? `Plan gratis · ${status.exports.used} de ${status.exports.limit} descargas este mes` : 'Plan gratis');
 
-export function AccountSlot({ account, onLogin, onOpenProjects, onPro, onSignOut }) {
+export function AccountSlot({ account, onLogin, onOpenProjects, onPro, onEmpresa, onSignOut }) {
   const [el, setEl] = useState(null);
   useEffect(() => { setEl(document.getElementById('account-slot')); }, []);
   if (!el) return null;
@@ -27,10 +28,11 @@ export function AccountSlot({ account, onLogin, onOpenProjects, onPro, onSignOut
   ) : (
     <Menu label={<span className="nav-user"><span className="avatar" aria-hidden="true">{(account.status?.email || account.session.email || '?')[0].toUpperCase()}</span><span className="nav-user-txt">{account.status?.pro ? 'Pro' : 'Mi cuenta'}</span>{account.status?.pending_requests > 0 && <span className="count" title="Solicitudes de edición">{account.status.pending_requests}</span>}</span>}
       buttonClass="nav-login" items={[
-        { label: account.status?.email || account.session.email, hint: account.status?.trial?.active ? `Prueba de Pro hasta el ${fmtDate(account.status.plan?.period_end)}` : account.status?.pro ? `DataLite Pro hasta el ${fmtDate(account.status.plan?.period_end)}` : planHint(account.status), onClick: () => {}, disabled: true },
+        { label: account.status?.email || account.session.email, hint: account.status?.org?.active ? `DataLite Empresa · ${account.status.org.name}` : account.status?.trial?.active ? `Prueba de Pro hasta el ${fmtDate(account.status.plan?.period_end)}` : account.status?.pro ? `DataLite Pro hasta el ${fmtDate(account.status.plan?.period_end)}` : planHint(account.status), onClick: () => {}, disabled: true },
         { label: 'Mis proyectos', onClick: onOpenProjects },
+        { label: account.status?.org ? `Mi empresa: ${account.status.org.name}` : 'Plan Empresa para equipos', onClick: onEmpresa },
         !account.status?.pro && { label: account.status?.trial?.available ? `Probar Pro gratis ${account.status.trial.days} días` : `Obtener Pro (${PRICE} al mes)`, onClick: onPro },
-        account.status?.pro && { label: 'Renovar o extender 30 días', onClick: onPro },
+        account.status?.pro && !account.status?.org?.active && { label: 'Renovar o extender 30 días', onClick: onPro },
         { label: 'Cerrar sesión', onClick: onSignOut },
       ]} />
   );
@@ -146,20 +148,24 @@ export function ProModal({ reason, account, onClose, onTrial }) {
 
 // ------------------------------------------------------------------ Nombre al guardar por primera vez
 
-export function NameModal({ title = 'Guardar proyecto', initial, onSubmit, onClose }) {
+export function NameModal({ title = 'Guardar proyecto', initial, orgName, onSubmit, onClose }) {
   const [name, setName] = useState(initial || '');
+  const [inOrg, setInOrg] = useState(!!orgName);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
   async function submit(e) {
     e.preventDefault();
     if (!name.trim()) { setError('Ponle un nombre al proyecto.'); return; }
     setBusy(true); setError('');
-    try { await onSubmit(name.trim().slice(0, 120)); } catch (err) { setError(err.message); setBusy(false); }
+    try { await onSubmit(name.trim().slice(0, 120), !!orgName && inOrg); } catch (err) { setError(err.message); setBusy(false); }
   }
   return (
     <Modal title={title} onClose={onClose}>
       <form className="stack" onSubmit={submit}>
         <Field label="Nombre del proyecto"><input className="input" value={name} maxLength={120} onChange={(e) => setName(e.target.value)} /></Field>
+        {orgName && (
+          <label className="check"><input type="checkbox" checked={inOrg} onChange={(e) => setInOrg(e.target.checked)} /> <span>Guardar en el espacio de <b>{orgName}</b>: lo ven y editan todas las personas del equipo</span></label>
+        )}
         <p className="muted small">Se guardan tus datos (la tabla original), las fórmulas, los visuales, los filtros y el tema.</p>
         {error && <p className="error" role="alert">{error}</p>}
         <button type="submit" className="btn btn-primary" disabled={busy}>{busy ? 'Guardando…' : 'Guardar en la nube'}</button>
@@ -176,12 +182,13 @@ export function ProjectsModal({ onOpen, onClose, onDelete, currentId }) {
   const load = () => rpc('dl_list_projects').then(setList).catch((e) => setError(e.message));
   useEffect(() => { load(); }, []);
   const mine = (list || []).filter((p) => p.role === 'owner');
-  const shared = (list || []).filter((p) => p.role !== 'owner');
+  const team = (list || []).filter((p) => p.role !== 'owner' && p.org);
+  const shared = (list || []).filter((p) => p.role !== 'owner' && !p.org);
   const row = (p) => (
     <li key={p.id} className={p.id === currentId ? 'current' : ''}>
       <button type="button" className="proj-open" onClick={() => onOpen(p.id)}>
         <span className="proj-name">{p.name}</span>
-        <span className="muted small">{p.role === 'owner' ? `${p.members ? `Compartido con ${p.members} · ` : ''}` : `De ${p.owner_email} · ${p.role === 'editor' ? 'puedes editar' : 'solo lectura'} · `}{(p.row_count || 0).toLocaleString('es-CO')} filas · {ago(p.updated_at)}</span>
+        <span className="muted small">{p.role === 'owner' ? `${p.org ? 'En el espacio del equipo · ' : ''}${p.members ? `Compartido con ${p.members} · ` : ''}` : `De ${p.owner_email} · ${p.role === 'editor' ? 'puedes editar' : 'solo lectura'} · `}{(p.row_count || 0).toLocaleString('es-CO')} filas · {ago(p.updated_at)}</span>
       </button>
       {p.requests > 0 && <span className="count" title="Solicitudes de edición pendientes">{p.requests}</span>}
       {p.role === 'owner' && <button type="button" className="icon-btn" aria-label={`Borrar ${p.name}`} onClick={async () => { if (confirm(`¿Borrar «${p.name}»? Esta acción no se puede deshacer.`)) { await onDelete(p.id); load(); } }}><Icon name="trash" /></button>}
@@ -193,6 +200,7 @@ export function ProjectsModal({ onOpen, onClose, onDelete, currentId }) {
       {!list && !error && <p className="muted">Cargando…</p>}
       {list && !list.length && <p className="muted">Aún no tienes proyectos guardados. Carga un archivo y usa «Guardar» para crear el primero.</p>}
       {mine.length > 0 && <><h3 className="proj-h">Míos</h3><ul className="proj-list">{mine.map(row)}</ul></>}
+      {team.length > 0 && <><h3 className="proj-h">De mi empresa</h3><ul className="proj-list">{team.map(row)}</ul></>}
       {shared.length > 0 && <><h3 className="proj-h">Compartidos conmigo</h3><ul className="proj-list">{shared.map(row)}</ul></>}
     </Modal>
   );
@@ -281,11 +289,14 @@ export function PaymentResult({ onLogin, onDone }) {
   const id = new URLSearchParams(location.search).get('id') || '';
   const [status, setStatus] = useState(null);
   const [error, setError] = useState(null);
+  const [plan, setPlan] = useState(null);
   useEffect(() => {
     if (!id) { setError(new CloudError('No llegó el identificador de la transacción.')); return; }
-    confirmPayment(id).then((d) => { setStatus(d.status); if (d.status === 'APPROVED') { track('pago_aprobado'); onDone?.(); } }).catch(setError);
+    confirmPayment(id).then((d) => { setStatus(d.status); setPlan(d.plan || null); if (d.status === 'APPROVED') { track('pago_aprobado'); onDone?.(); } }).catch(setError);
   }, [id]); // eslint-disable-line react-hooks/exhaustive-deps
-  const [title, body] = error ? ['No pudimos confirmar el pago', error.message] : status ? (PAY_TEXT[status] || PAY_TEXT.PENDING) : ['Confirmando tu pago…', 'Un momento, estamos consultando a Wompi.'];
+  const [title, body] = error ? ['No pudimos confirmar el pago', error.message]
+    : status === 'APPROVED' && plan === 'empresa' ? ['Pago aprobado', 'Tu plan DataLite Empresa quedó activo. Abre «Mi empresa» en el menú de tu cuenta para invitar a tu equipo.']
+      : status ? (PAY_TEXT[status] || PAY_TEXT.PENDING) : ['Confirmando tu pago…', 'Un momento, estamos consultando a Wompi.'];
   return (
     <div className="sheet pay-result" role="status">
       <div className="sheet-body">
@@ -298,5 +309,99 @@ export function PaymentResult({ onLogin, onDone }) {
         </div>
       </div>
     </div>
+  );
+}
+
+// ------------------------------------------------------------------ Plan Empresa
+
+const range = (a, b) => Array.from({ length: b - a + 1 }, (_, i) => a + i);
+
+export function EmpresaModal({ account, onClose, onChanged }) {
+  const [org, setOrg] = useState(undefined); // undefined: cargando · null: sin empresa
+  const [error, setError] = useState('');
+  const [busy, setBusy] = useState(false);
+  const [seats, setSeats] = useState(5);
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const load = () => rpc('dl_org_status').then((o) => { setOrg(o); if (o) setSeats(Math.max(o.seats, o.used, 5)); }).catch((e) => { setError(e.message); setOrg(null); });
+  useEffect(() => { load(); }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  const act = async (fn) => { setBusy(true); setError(''); try { await fn(); await load(); onChanged?.(); } catch (e) { setError(e.message); } finally { setBusy(false); } };
+  async function pay(e) {
+    e?.preventDefault();
+    if (!org && name.trim().length < 2) { setError('Escribe el nombre de la empresa.'); return; }
+    setBusy(true); setError('');
+    try { const url = await startCheckout('empresa', { seats, orgName: name.trim() }); track('checkout_empresa', { cupos: seats }); window.location.assign(url); }
+    catch (err) { setError(err.message); setBusy(false); }
+  }
+  const seatPicker = (min) => (
+    <Field label="Usuarios (crean o editan tableros)">
+      <select value={seats} onChange={(e) => setSeats(+e.target.value)}>{range(min, 20).map((n) => <option key={n} value={n}>{n} usuarios</option>)}</select>
+    </Field>
+  );
+  const price = <p className="price-line"><b>{cop(orgYearTotal(seats))}</b> <span className="muted">COP al año · {seats} × {cop(seatMonthPrice(seats))} por usuario al mes</span></p>;
+
+  if (org === undefined) return <Modal title="DataLite Empresa" onClose={onClose}><p className="muted">Cargando…</p></Modal>;
+
+  if (!org) {
+    return (
+      <Modal title="DataLite Empresa" onClose={onClose}>
+        <form className="stack" onSubmit={pay}>
+          <ul className="ticks">
+            <li>Cada persona con cupo tiene todo lo de Pro: guardar, compartir y descargar sin límite ni marca de agua</li>
+            <li>Espacio común: los tableros del equipo los ven y editan todos sus miembros, sin invitar uno por uno</li>
+            <li>Tú administras los cupos: invitas y quitas personas por correo</li>
+            <li>Quien solo mira tableros compartidos no paga</li>
+          </ul>
+          <Field label="Nombre de la empresa"><input className="input" value={name} maxLength={120} onChange={(e) => setName(e.target.value)} placeholder="Mi Empresa SAS" /></Field>
+          {seatPicker(5)}
+          {price}
+          <p className="muted small">De 5 a 9 usuarios: {cop(16900)} por usuario al mes. De 10 a 20: {cop(14900)}. Un solo pago por 12 meses con Wompi (tarjeta, PSE, Nequi o Bancolombia), sin renovación automática. ¿Más de 20 usuarios? Escríbenos desde <a href="/acerca">Acerca de</a>.</p>
+          {error && <p className="error" role="alert">{error}</p>}
+          <button type="submit" className="btn btn-primary" disabled={busy}>{busy ? 'Abriendo Wompi…' : `Pagar ${cop(orgYearTotal(seats))} con Wompi`}</button>
+        </form>
+      </Modal>
+    );
+  }
+
+  const admin = org.role === 'admin';
+  const daysLeft = Math.ceil((new Date(org.period_end) - Date.now()) / 86400000);
+  const addingSeats = org.active && seats > org.seats && daysLeft > 30;
+  return (
+    <Modal title={org.name} onClose={onClose}>
+      <div className="stack">
+        <p>{org.active ? <>Plan Empresa vigente hasta el <b>{fmtDate(org.period_end)}</b>.</> : <>El plan venció el <b>{fmtDate(org.period_end)}</b>. Los tableros del equipo quedan en solo lectura hasta renovarlo.</>} {admin ? `${org.used} de ${org.seats} cupos usados.` : `Administra: ${org.owner_email}.`}</p>
+        {admin && (
+          <>
+            <form className="share-form" onSubmit={(e) => { e.preventDefault(); act(async () => { await rpc('dl_org_invite', { p_email: email }); setEmail(''); track('empresa_invitar'); }); }}>
+              <input className="input" type="email" placeholder="correo@empresa.com" value={email} onChange={(e) => setEmail(e.target.value)} aria-label="Correo de la persona" required />
+              <button type="submit" className="btn btn-primary btn-sm" disabled={busy || !email.trim() || !org.active}>Agregar</button>
+            </form>
+            <p className="muted small">La persona entra a DataLite con ese correo y su cupo se activa sola. Envíale el enlace {location.origin} por WhatsApp o correo.</p>
+          </>
+        )}
+        {error && <p className="error" role="alert">{error}</p>}
+        {admin && (
+          <ul className="member-list">
+            {org.members.map((m) => (
+              <li key={m.email}>
+                <span>{m.email}{m.role === 'admin' && <span className="muted small"> · administra</span>}{!m.has_account && <span className="muted small"> · aún sin cuenta</span>}</span>
+                {m.email !== org.owner_email && <button type="button" className="icon-btn" aria-label={`Quitar a ${m.email}`} disabled={busy} onClick={() => act(() => rpc('dl_org_remove', { p_email: m.email }))}><Icon name="close" /></button>}
+              </li>
+            ))}
+          </ul>
+        )}
+        {admin && org.owner_email === account.status?.email && (
+          <form className="stack org-pay" onSubmit={pay}>
+            <h3 className="proj-h">{org.active ? 'Renovar o agregar cupos' : 'Renovar el plan'}</h3>
+            {seatPicker(Math.max(5, org.used))}
+            {addingSeats
+              ? <p className="muted small">Pagas solo los {seats - org.seats} cupos nuevos por los {daysLeft} días que faltan; Wompi te muestra el valor exacto.</p>
+              : <>{price}<p className="muted small">{org.active ? 'Los 12 meses nuevos se suman al final del periodo vigente.' : 'El nuevo periodo empieza hoy.'}</p></>}
+            <button type="submit" className="btn btn-ghost" disabled={busy}>{busy ? 'Abriendo Wompi…' : 'Pagar con Wompi'}</button>
+          </form>
+        )}
+        {!admin && <button type="button" className="btn btn-ghost btn-sm" disabled={busy} onClick={() => { if (confirm(`¿Salir de ${org.name}? Perderás el acceso a sus tableros.`)) act(() => rpc('dl_org_remove', { p_email: account.status?.email })); }}>Salir de la empresa</button>}
+      </div>
+    </Modal>
   );
 }

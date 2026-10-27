@@ -4,7 +4,7 @@ import { readFile, buildTable, MAX_FILE_MB } from './lib/data.js';
 import { SAMPLES, makeSample } from './lib/samples.js';
 import { Dashboard } from './app/Dashboard.jsx';
 import { track, useToast } from './app/ui.jsx';
-import { AccountSlot, LoginModal, ConsentModal, ProModal, NameModal, ProjectsModal, ShareModal, PaymentResult } from './app/Cloud.jsx';
+import { AccountSlot, LoginModal, ConsentModal, ProModal, NameModal, ProjectsModal, ShareModal, PaymentResult, EmpresaModal } from './app/Cloud.jsx';
 import { cloudEnabled, currentSession, handleAuthCallback, rpc, signOut, packTable, uploadData, downloadData, deleteData, CloudError } from './lib/cloud.js';
 
 // ---------------------------------------------------------------- Carga
@@ -134,8 +134,15 @@ function App() {
   // Botones del sitio (sección Planes) que abren el pago de Pro: se enlazan por data-open-pro.
   const openPro = useRef(null);
   openPro.current = async () => { track('pro_click'); if (await gate('account', 'Inicia sesión para activar DataLite Pro.')) setModal({ type: 'pro' }); };
+  const openEmpresa = useRef(null);
+  openEmpresa.current = async () => { track('empresa_click'); if (await gate('account', 'Inicia sesión con tu correo de trabajo para crear el plan de tu empresa.')) setModal({ type: 'empresa' }); };
   useEffect(() => {
-    const onClick = (e) => { const b = e.target.closest?.('[data-open-pro]'); if (!b || !cloudOn) return; e.preventDefault(); openPro.current(); };
+    const onClick = (e) => {
+      if (!cloudOn) return;
+      const emp = e.target.closest?.('[data-open-empresa]');
+      if (emp) { e.preventDefault(); openEmpresa.current(); return; }
+      const b = e.target.closest?.('[data-open-pro]'); if (!b) return; e.preventDefault(); openPro.current();
+    };
     document.addEventListener('click', onClick);
     return () => document.removeEventListener('click', onClick);
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
@@ -207,8 +214,9 @@ function App() {
     return blob.size;
   }
 
-  async function createProject(name, state) {
+  async function createProject(name, state, inOrg = false) {
     const { id } = await rpc('dl_create_project', { p_name: name, p_state: state });
+    if (inOrg) await rpc('dl_set_project_org', { p_id: id, p_in_org: true });
     const bytes = await uploadCurrent(id);
     const version = await rpc('dl_save_project', { p_id: id, p_name: name, p_state: state, p_expected_version: 1, p_has_data: true, p_data_bytes: bytes, p_row_count: ds.rows.length });
     const meta = { id, name, version, role: 'owner', can_edit: true, owner_email: account.status?.email, has_data: true, dataKey: ds.key };
@@ -219,13 +227,17 @@ function App() {
     return meta;
   }
 
+  // Nombre del espacio de la empresa vigente (para ofrecer guardar ahí)
+  const orgSpace = () => (account.status?.org?.active ? account.status.org.name : null);
+
   async function onSave(state, { asNew } = {}) {
     if (!(await gate('pro', 'Guardar tableros en la nube es parte de DataLite Pro.'))) return false;
     if (!project || asNew) {
       return new Promise((resolve) => {
         setModal({
           type: 'name', initial: asNew ? `${project?.name || ds.fileName} (copia)` : ds.fileName,
-          submit: async (name) => { await createProject(name, state); setModal(null); showToast('Proyecto guardado en tu cuenta.'); resolve(true); },
+          orgName: orgSpace(),
+          submit: async (name, inOrg) => { await createProject(name, state, inOrg); setModal(null); showToast('Proyecto guardado en tu cuenta.'); resolve(true); },
           cancel: () => resolve(false),
         });
       });
@@ -250,7 +262,7 @@ function App() {
   async function onShare(getState) {
     if (!(await gate('pro', 'Compartir tableros con tu equipo es parte de DataLite Pro.'))) return;
     if (!project) {
-      setModal({ type: 'name', title: 'Guarda el proyecto para compartirlo', initial: ds.fileName, submit: async (name) => { const meta = await createProject(name, getState()); setModal({ type: 'share', project: meta }); } });
+      setModal({ type: 'name', title: 'Guarda el proyecto para compartirlo', initial: ds.fileName, orgName: orgSpace(), submit: async (name, inOrg) => { const meta = await createProject(name, getState(), inOrg); setModal({ type: 'share', project: meta }); } });
       return;
     }
     setModal({ type: 'share', project });
@@ -323,11 +335,12 @@ function App() {
           ? <Dashboard key={ds.key} ds={ds} initial={initial} cloud={cloud} onReset={() => { setDs(null); setProject(null); setInitial(null); history.replaceState(null, '', '/'); }} onSheet={(i) => { try { load(ds.fileName, ds.sheets, i); } catch (e) { alert(e.message); } }} />
           : <Dropzone onFile={onFile} onSample={onSample} busy={busy} error={error} />}
 
-      {cloudOn && <AccountSlot account={account} onLogin={() => setModal({ type: 'login' })} onOpenProjects={openProjects} onPro={async () => { if (await gate('account', 'Inicia sesión para activar DataLite Pro.')) setModal({ type: 'pro' }); }} onSignOut={async () => { await signOut(); setAccount({ session: null, status: null }); showToast('Cerraste sesión.'); }} />}
+      {cloudOn && <AccountSlot account={account} onLogin={() => setModal({ type: 'login' })} onOpenProjects={openProjects} onEmpresa={() => openEmpresa.current()} onPro={async () => { if (await gate('account', 'Inicia sesión para activar DataLite Pro.')) setModal({ type: 'pro' }); }} onSignOut={async () => { await signOut(); setAccount({ session: null, status: null }); showToast('Cerraste sesión.'); }} />}
       {modal?.type === 'login' && <LoginModal reason={modal.reason} onClose={() => setModal(null)} />}
       {modal?.type === 'consent' && <ConsentModal onClose={() => setModal(null)} onDone={async () => { const st = await refreshAccount(); const then = pending.current; pending.current = null; setModal(modal.level === 'pro' && !st?.pro ? { type: 'pro', reason: modal.reason } : null); then?.(); }} />}
       {modal?.type === 'pro' && <ProModal reason={modal.reason} account={account} onTrial={onTrial} onClose={() => setModal(null)} />}
-      {modal?.type === 'name' && <NameModal title={modal.title} initial={modal.initial} onSubmit={modal.submit} onClose={() => { modal.cancel?.(); setModal(null); }} />}
+      {modal?.type === 'empresa' && <EmpresaModal account={account} onChanged={refreshAccount} onClose={() => setModal(null)} />}
+      {modal?.type === 'name' && <NameModal title={modal.title} initial={modal.initial} orgName={modal.orgName} onSubmit={modal.submit} onClose={() => { modal.cancel?.(); setModal(null); }} />}
       {modal?.type === 'projects' && <ProjectsModal currentId={project?.id} onOpen={openProject} onDelete={onDeleteProject} onClose={() => setModal(null)} />}
       {modal?.type === 'share' && <ShareModal project={modal.project} account={account} onClose={() => { setModal(null); refreshAccount(); }} />}
       {toast}
