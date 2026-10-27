@@ -4,8 +4,8 @@
 -- sola prueba de 14 días. Requiere 0001_datalite.sql.
 
 -- ───────────────────────── Parámetros ─────────────────────────
-create function private.dl_free_exports() returns int language sql immutable as $$ select 3 $$;
-create function private.dl_trial_days() returns int language sql immutable as $$ select 14 $$;
+create function private.dl_free_exports() returns int language sql immutable set search_path = '' as $$ select 3 $$;
+create function private.dl_trial_days() returns int language sql immutable set search_path = '' as $$ select 14 $$;
 -- Inicio del mes en curso en hora de Colombia
 create function private.dl_month_start() returns timestamptz
 language sql stable set search_path = '' as $$
