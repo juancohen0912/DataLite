@@ -1,0 +1,99 @@
+<!--
+{
+  "title": "Gráfico de Pareto online: cómo hacerlo gratis | DataLite",
+  "h1": "Cómo hacer un gráfico de Pareto online, paso a paso",
+  "description": "Qué es la regla 80/20, cómo armar un gráfico de Pareto con barras ordenadas y porcentaje acumulado, y cuándo usarlo en calidad y ventas.",
+  "article": { "published": "2026-10-27" }
+}
+-->
+<main id="contenido" class="prose-page">
+  <article class="wrap prose">
+    <p class="crumbs"><a href="/">Inicio</a> / <a href="/guias/">Guías</a></p>
+    <h1>Cómo hacer un gráfico de Pareto online, paso a paso</h1>
+    <p class="meta">Por Juan Cohen. Lectura de 6 minutos.</p>
+
+    <p>Un gráfico de Pareto ordena las causas de un problema, o las fuentes de un resultado, de la más importante a la menos importante, y muestra cuánto acumulan juntas. Sirve para responder una pregunta muy concreta: ¿en qué pocas cosas debo concentrarme primero? Esta guía explica cómo hacer un gráfico de Pareto online a partir de un Excel o CSV, cómo calcular el porcentaje acumulado y en qué casos de calidad y ventas vale la pena usarlo.</p>
+
+    <h2>Qué es la regla 80/20</h2>
+    <p>El nombre viene del economista italiano Vilfredo Pareto, que observó que la riqueza se concentraba en una parte pequeña de la población. Décadas después, Joseph Juran llevó la idea al control de calidad con una frase que se volvió famosa: «los pocos vitales y los muchos triviales». Hoy el diagrama de Pareto es una de las herramientas básicas de calidad, junto con el diagrama de causa y efecto y la hoja de verificación.</p>
+    <p>La «regla 80/20» dice que una minoría de causas suele explicar la mayoría de los efectos: pocos productos generan buena parte de las ventas, pocos tipos de defecto explican la mayoría de los reclamos. Conviene leerla como una tendencia, no como una ley. En tus datos puede salir 70/30 o 90/10, y eso también es información útil. Lo que importa es descubrir si hay concentración y dónde está.</p>
+
+    <h2>Las partes de un gráfico de Pareto</h2>
+    <ul>
+      <li><strong>Barras ordenadas de mayor a menor.</strong> Cada barra es una categoría: un defecto, un producto, un cliente, una causa de parada.</li>
+      <li><strong>Línea de porcentaje acumulado.</strong> Suma, de izquierda a derecha, qué parte del total llevan las categorías vistas hasta ese punto. Termina en 100 %.</li>
+      <li><strong>Un corte de referencia.</strong> Normalmente en el 80 %. Las categorías a la izquierda del corte son las «pocas vitales».</li>
+    </ul>
+
+    <h2>Cómo calcular el porcentaje acumulado</h2>
+    <p>Supón que registraste los reclamos de un mes por tipo de problema. Primero los cuentas, los ordenas de mayor a menor y luego vas sumando:</p>
+    <table>
+      <thead><tr><th>Tipo de reclamo</th><th>Reclamos</th><th>% del total</th><th>% acumulado</th></tr></thead>
+      <tbody>
+        <tr><td>Entrega tardía</td><td>48</td><td>40 %</td><td>40 %</td></tr>
+        <tr><td>Producto dañado</td><td>30</td><td>25 %</td><td>65 %</td></tr>
+        <tr><td>Factura con error</td><td>18</td><td>15 %</td><td>80 %</td></tr>
+        <tr><td>Talla o color equivocado</td><td>12</td><td>10 %</td><td>90 %</td></tr>
+        <tr><td>Empaque incompleto</td><td>7</td><td>6 %</td><td>96 %</td></tr>
+        <tr><td>Otros</td><td>5</td><td>4 %</td><td>100 %</td></tr>
+      </tbody>
+    </table>
+    <p>Son datos de ejemplo para ilustrar el cálculo. La lectura es inmediata: tres tipos de reclamo, la mitad de la lista, explican el 80 % del total. Si el equipo de servicio solo puede atacar dos frentes este trimestre, ya sabe cuáles.</p>
+    <p>La fórmula es simple: el % de cada fila es su valor dividido entre el total, y el % acumulado de una fila es su % más el acumulado de la fila anterior. En Excel, si el porcentaje está en la columna C desde la fila 2, el acumulado en D2 es <code>=C2</code> y en D3 es <code>=D2+C3</code>, y luego arrastras hacia abajo.</p>
+
+    <div class="callout"><p><strong>Ojo con «Otros»:</strong> por convención va siempre al final, aunque sea más grande que alguna categoría individual. Si «Otros» termina siendo una de las barras más altas, la clasificación está demasiado fragmentada y conviene revisar cómo se registran las causas.</p></div>
+
+    <h2>Paso a paso para hacer el gráfico de Pareto online en DataLite</h2>
+    <p>DataLite no dibuja la línea acumulada sobre las barras, pero sí hace la parte que más trabajo da: agrupar miles de filas, ordenarlas y calcular el porcentaje de cada categoría. Con eso tienes el Pareto listo para leer en segundos, y si necesitas el gráfico combinado lo terminas en Excel o PowerPoint.</p>
+    <ol>
+      <li>Abre <a href="/?ejemplo=ventas">la herramienta con el ejemplo de ventas</a> o arrastra tu propio archivo .xlsx, .ods o .csv (hasta 30 MB). Los datos se procesan en tu navegador y no se suben a ningún servidor.</li>
+      <li>En <strong>Agrupar por</strong> elige la categoría que quieres priorizar, por ejemplo «Producto». En un análisis de calidad sería «Tipo de defecto» o «Causa».</li>
+      <li>En <strong>Cálculo</strong> elige «Suma» y en <strong>Valor</strong> la columna «Ventas». Si cada fila es un reclamo o un defecto, usa «Conteo» para contar filas.</li>
+      <li>En <strong>Ordenar</strong> selecciona «Mayor a menor». Es el requisito básico de cualquier Pareto.</li>
+      <li>En <strong>Mostrar</strong> elige «Todos» si tienes pocas categorías, o «Top 10» o «Top 15» si son muchas: las menores se agrupan en «Otros», que es justo lo que pide el método.</li>
+      <li>Deja el tipo de gráfico en <strong>Columnas</strong> o <strong>Barras</strong>. La tabla dinámica de al lado muestra el % de cada categoría sobre el total; ve sumándolos de arriba hacia abajo hasta llegar al 80 %.</li>
+      <li>Haz clic en una barra para filtrar todo el tablero por esa categoría y ver, por ejemplo, en qué región o canal se concentra.</li>
+      <li>Abre <strong>Exportar</strong> y elige «Tabla en Excel» para agregar la columna de acumulado con la fórmula de arriba, o «PowerPoint» para llevar el gráfico como gráfico editable a tu presentación.</li>
+    </ol>
+    <p>Si quieres repasar las opciones de cálculo, la <a href="/guias/tabla-dinamica-online">guía de tabla dinámica online</a> explica cuándo usar suma, conteo, conteo único o promedio.</p>
+
+    <h2>Si prefieres hacerlo en Excel</h2>
+    <p>Las versiones recientes de Excel para escritorio incluyen un tipo de gráfico de Pareto dentro de los gráficos estadísticos, que ordena y calcula el acumulado solo. Funciona bien cuando los datos ya vienen resumidos en dos columnas (categoría y valor). Si partes de un registro con miles de filas, primero tienes que resumirlo con una tabla dinámica. Otra opción es hacer el gráfico combinado a mano: columnas para los valores y una línea en el eje secundario para el porcentaje acumulado.</p>
+
+    <h2>Cuándo usar un gráfico de Pareto</h2>
+    <table>
+      <thead><tr><th>Área</th><th>Agrupar por</th><th>Pregunta que responde</th></tr></thead>
+      <tbody>
+        <tr><td>Calidad</td><td>Tipo de defecto</td><td>¿Qué defectos atacar primero?</td></tr>
+        <tr><td>Mantenimiento</td><td>Causa de parada</td><td>¿Qué fallas se llevan más horas de equipo detenido?</td></tr>
+        <tr><td>Ventas</td><td>Producto o cliente</td><td>¿Qué productos o clientes sostienen la facturación?</td></tr>
+        <tr><td>Servicio al cliente</td><td>Motivo de reclamo</td><td>¿Qué cambio reduciría más reclamos?</td></tr>
+        <tr><td>Inventario</td><td>Referencia</td><td>¿Qué referencias concentran el valor almacenado?</td></tr>
+      </tbody>
+    </table>
+    <p>En ventas, el Pareto ayuda a decidir dónde poner el esfuerzo comercial y qué productos no pueden quedarse sin existencias. En calidad, a no repartir recursos entre veinte problemas cuando tres explican casi todo.</p>
+
+    <h2>Errores comunes</h2>
+    <h3>Medir con la variable equivocada</h3>
+    <p>Contar defectos no es lo mismo que medir su costo. Un defecto frecuente pero barato puede pesar menos que uno raro y costoso. Si tienes una columna de costo o de horas perdidas, haz el Pareto con «Suma» de esa columna además del conteo, y compara.</p>
+    <h3>Categorías mal escritas</h3>
+    <p>«Entrega tardía», «entrega tarde» y «Retraso» aparecerán como tres barras distintas y diluirán el resultado. Unifica los nombres en el archivo antes de analizar.</p>
+    <h3>Mezclar periodos</h3>
+    <p>Un Pareto de dos años puede esconder que el problema principal cambió. Agrega un filtro por fecha y compara el último trimestre con el anterior.</p>
+    <h3>Usar una torta</h3>
+    <p>La torta no muestra orden ni acumulado, y con más de seis porciones se vuelve ilegible. Para priorizar, las barras ordenadas siempre ganan.</p>
+
+    <div class="cta-box">
+      <h2>Arma tu Pareto ahora</h2>
+      <p>Carga el ejemplo de ventas, agrupa por producto, ordena de mayor a menor y mira cuántos productos hacen el 80 % de la facturación.</p>
+      <a class="btn btn-primary" href="/?ejemplo=ventas">Abrir el ejemplo de ventas</a>
+    </div>
+
+    <div class="ad-slot" data-slot="article"></div>
+
+    <h2>Preguntas relacionadas</h2>
+    <p><strong>¿El Pareto siempre da 80/20?</strong> No. Es una forma de mirar los datos, no un resultado garantizado. Si la línea acumulada sube de forma casi recta, no hay concentración y conviene buscar otra manera de priorizar.</p>
+    <p><strong>¿Cuántas categorías debe tener?</strong> Entre 5 y 15 suele leerse bien. Con más, agrupa las menores en «Otros».</p>
+    <p>Si el Pareto va a formar parte de un tablero semanal, sigue con la guía sobre <a href="/guias/dashboard-en-excel">cómo hacer un dashboard a partir de un Excel</a>, o revisa la <a href="/guias/alternativa-power-bi-gratis">alternativa gratis a Power BI</a> para comparar opciones.</p>
+  </article>
+</main>
