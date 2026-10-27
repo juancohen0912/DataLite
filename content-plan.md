@@ -7,7 +7,6 @@ Formato: `- [ ] slug | búsqueda objetivo | enfoque | ejemplo de DataLite que co
 
 ## Pendientes
 
-- [ ] grafico-de-pareto-online | gráfico de pareto online | Qué es la regla 80/20, cómo armarlo con barras ordenadas y acumulado, cuándo usarlo en calidad y ventas | ventas
 - [ ] tabla-dinamica-por-mes | tabla dinámica por mes con fechas | Agrupar fechas por mes, trimestre y año; errores típicos con fechas en texto y formato día/mes | gastos
 - [ ] dashboard-de-ventas-excel | dashboard de ventas en excel | Los 5 indicadores que debe tener, qué gráfico para cada uno, ejemplo paso a paso | ventas
 - [ ] analizar-gastos-personales-excel | cómo analizar mis gastos en excel | Categorizar gastos, ver en qué se va la plata por mes y por medio de pago | gastos
@@ -25,3 +24,4 @@ Formato: `- [ ] slug | búsqueda objetivo | enfoque | ejemplo de DataLite que co
 - [x] tabla-dinamica-online (2026-10-20)
 - [x] dashboard-en-excel (2026-10-20)
 - [x] alternativa-power-bi-gratis (2026-10-20)
+- [x] grafico-de-pareto-online (2026-10-27)
