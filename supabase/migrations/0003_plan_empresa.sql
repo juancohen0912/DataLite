@@ -195,9 +195,9 @@ language sql stable security definer set search_path = '' as $$
   ) t;
 $$;
 
--- Pagos: Pro como antes; Empresa nueva, renovación anual o más cupos (prorrateados por los días que faltan)
-drop function public.dl_create_payment(text);
-create function public.dl_create_payment(p_plan text, p_seats int default null, p_org_name text default null) returns jsonb
+-- Pagos: Pro como antes; Empresa nueva, renovación anual o más cupos (prorrateados por los días que faltan).
+-- Función nueva junto a dl_create_payment(text), que se conserva para la versión del sitio ya publicada.
+create function public.dl_create_checkout(p_plan text, p_seats int default null, p_org_name text default null) returns jsonb
 language plpgsql security definer set search_path = '' as $$
 declare
   uid uuid := (select auth.uid());
@@ -343,6 +343,6 @@ language sql stable security definer set search_path = '' as $$
 $$;
 
 revoke all on function public.dl_org_status(), public.dl_org_invite(text), public.dl_org_remove(text), public.dl_org_rename(text),
-  public.dl_set_project_org(uuid, boolean), public.dl_create_payment(text, int, text) from public, anon;
+  public.dl_set_project_org(uuid, boolean), public.dl_create_checkout(text, int, text) from public, anon;
 grant execute on function public.dl_org_status(), public.dl_org_invite(text), public.dl_org_remove(text), public.dl_org_rename(text),
-  public.dl_set_project_org(uuid, boolean), public.dl_create_payment(text, int, text) to authenticated;
+  public.dl_set_project_org(uuid, boolean), public.dl_create_checkout(text, int, text) to authenticated;

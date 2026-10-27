@@ -21,9 +21,9 @@ export default {
     const user = await getUser(request);
     if (!user) return fail('Inicia sesión para continuar.', 401);
 
-    const { data, error } = await rpcAsUser(user, 'dl_create_payment', args);
+    const { data, error } = await rpcAsUser(user, 'dl_create_checkout', args);
     if (error || !data) {
-      console.error('dl_create_payment_error', error?.code);
+      console.error('dl_create_checkout_error', error?.code);
       if (error?.hint === 'consent') return fail('Acepta la política de privacidad de DataLite para continuar.', 409);
       // Mensajes de validación de la base (cupos, nombre, permisos): se muestran tal cual
       if (error?.code === 'P0001' && error.message) return fail(error.message, 422);
