@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { sourceRef, sourceLabel } from '../lib/connectors.js';
 import { suggest, applyFilters, fmt } from '../lib/data.js';
 import { buildModel } from '../lib/model.js';
 import { svgToPng } from '../lib/Chart.jsx';
@@ -17,7 +18,7 @@ const EMPTY_FORMULAS = { columns: [], measures: [], functions: [] };
  * Tablero estilo Power BI.
  * cloud: { project, role, pro, onSave(state, name), onShare(), onOpenProjects(), saving } — opcional.
  */
-export function Dashboard({ ds, initial, onReset, onSheet, cloud }) {
+export function Dashboard({ ds, initial, onReset, onSheet, onRefresh, cloud }) {
   const readOnly = cloud?.role === 'viewer';
   const [formulas, setFormulas] = useState(() => ({ ...EMPTY_FORMULAS, ...(initial?.formulas || {}) }));
   const model = useMemo(() => buildModel(ds, formulas), [ds, formulas]);
@@ -116,6 +117,7 @@ export function Dashboard({ ds, initial, onReset, onSheet, cloud }) {
   const getState = () => ({
     v: 1, fileName: ds.fileName, sheet: ds.sheets?.[ds.sheetIdx]?.name || null, theme,
     formulas, visuals: serializeVisuals(visuals, model.columns), filters: serializeFilters(filters, model.columns),
+    source: ds.source ? sourceRef(ds.source, ds.sheets?.[ds.sheetIdx]?.name || ds.source.sheet) : null,
   });
   async function save(asNew = false) {
     if (!cloud) return;
@@ -145,6 +147,7 @@ export function Dashboard({ ds, initial, onReset, onSheet, cloud }) {
           <p className="muted small">
             {ds.rows.length.toLocaleString('es-CO')} filas, {model.columns.length} columnas{calcCount ? ` (${calcCount} calculadas)` : ''}
             {ds.truncated && ' · se leyeron las primeras 300.000 filas'}
+            {ds.source && <> · Conectado a {sourceLabel(ds.source)}</>}
             {cloud?.project && <> · {readOnly ? `Compartido por ${cloud.project.owner_email} (solo lectura)` : cloud.role === 'editor' ? `Compartido por ${cloud.project.owner_email}` : 'Guardado en tu cuenta'}</>}
           </p>
         </div>
@@ -180,6 +183,9 @@ export function Dashboard({ ds, initial, onReset, onSheet, cloud }) {
           )}
           {cloud?.project && cloud.role === 'viewer' && (
             <button type="button" className="btn btn-ghost" onClick={cloud.onRequestEdit} disabled={cloud.editRequested}>{cloud.editRequested ? 'Permiso solicitado' : 'Pedir permiso para editar'}</button>
+          )}
+          {ds.source && onRefresh && !readOnly && (
+            <button type="button" className="btn btn-ghost" onClick={onRefresh} title={`Leer de nuevo «${ds.source.name}» desde ${sourceLabel(ds.source)}`}><Icon name="refresh" /> Actualizar datos</button>
           )}
           <Menu label={busy ? 'Exportando…' : 'Exportar'} buttonClass="btn btn-primary" items={[
             exportNote && { label: exportNote, onClick: () => {}, disabled: true },
