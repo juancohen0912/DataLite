@@ -55,7 +55,7 @@ export async function exportWorkbook(views, fileBase, data) {
 /** Compatibilidad: la tabla de un solo visual. */
 export const exportPivotXlsx = (view, fileBase) => exportWorkbook([view], fileBase);
 
-const PPT_TYPE = { bar: 'bar', hbar: 'bar', line: 'line', area: 'area', pie: 'pie', donut: 'doughnut', treemap: 'bar', combo: 'bar' };
+const PPT_TYPE = { bar: 'bar', hbar: 'bar', line: 'line', area: 'area', pie: 'pie', donut: 'doughnut', treemap: 'bar', map: 'bar', combo: 'bar' };
 
 /** Presentación con gráficos nativos (editables en PowerPoint). */
 export async function exportPptx(views, fileBase, { palette = PALETTE, watermark = true } = {}) {
@@ -119,7 +119,7 @@ export async function exportPptx(views, fileBase, { palette = PALETTE, watermark
     }
     slide.addChart(type, data, {
       x: 0.5, y: 1.2, w: showTable ? 8 : 12.3, h: 5.8,
-      barDir: v.kind === 'hbar' || v.kind === 'treemap' ? 'bar' : 'col',
+      barDir: v.kind === 'hbar' || v.kind === 'treemap' || v.kind === 'map' ? 'bar' : 'col',
       barGrouping: v.series.length ? 'stacked' : 'clustered',
       chartColors: v.series.length || isPie ? colors : [colors[0]],
       showLegend: isPie || v.series.length > 0, legendPos: 'b', legendFontSize: 10,

@@ -6,12 +6,14 @@ import { Dashboard } from './app/Dashboard.jsx';
 import { track, useToast } from './app/ui.jsx';
 import { AccountSlot, LoginModal, ConsentModal, ProModal, NameModal, ProjectsModal, ShareModal, PaymentResult, EmpresaModal } from './app/Cloud.jsx';
 import { ConnectButtons, MicrosoftFilesModal } from './app/Connect.jsx';
+import { TemplateList, TemplateModal } from './app/Templates.jsx';
+import { templateState, templateAoa } from './app/templates.js';
 import { pickGoogleSheet, fetchSource, sourceLabel } from './lib/connectors.js';
 import { cloudEnabled, currentSession, handleAuthCallback, rpc, signOut, packTable, uploadData, downloadData, deleteData, CloudError } from './lib/cloud.js';
 
 // ---------------------------------------------------------------- Carga
 
-function Dropzone({ onFile, onSample, onConnect, locked, busy, error }) {
+function Dropzone({ onFile, onSample, onConnect, onTemplate, locked, busy, error }) {
   const [over, setOver] = useState(false);
   const input = useRef(null);
   const cols = ['A', 'B', 'C', 'D', 'E', 'F'];
@@ -42,6 +44,7 @@ function Dropzone({ onFile, onSample, onConnect, locked, busy, error }) {
             onChange={(e) => { const f = e.target.files?.[0]; if (f) onFile(f); e.target.value = ''; }} />
         </div>
         {onConnect && <ConnectButtons onConnect={onConnect} locked={locked} busy={busy} />}
+        {onTemplate && <TemplateList onOpen={onTemplate} busy={busy} />}
         <div className="samples">
           <span>¿Sin archivo a la mano? Prueba con un ejemplo:</span>
           <div className="sample-list">
@@ -160,10 +163,10 @@ function App() {
     return true;
   }
 
-  function load(fileName, sheets, sheetIdx = 0, source = null) {
+  function load(fileName, sheets, sheetIdx = 0, source = null, initialState = null) {
     const t = buildTable(sheets[sheetIdx].aoa);
     if (!t.rows.length || !t.columns.length) throw new Error('No encontramos filas con datos. Revisa que la primera fila tenga los encabezados.');
-    setProject(null); setInitial(null);
+    setProject(null); setInitial(typeof initialState === 'function' ? initialState(t.columns) : initialState);
     if (new URLSearchParams(location.search).get('p')) history.replaceState(null, '', '/');
     setDs({ fileName, sheets, sheetIdx, ...t, source, key: `${fileName}-${sheetIdx}-${Date.now()}` });
   }
@@ -223,6 +226,20 @@ function App() {
     } catch (e) {
       setError(e.message || 'No pudimos leer el archivo.');
     } finally { setBusy(false); }
+  }
+
+  // Plantillas: con datos de ejemplo o con el archivo del usuario y su asignación de columnas
+  function onUseTemplate({ tpl, sample, fileName, sheets, sheetIdx, map }) {
+    setModal(null); setError('');
+    try {
+      if (sample) {
+        const aoa = templateAoa(tpl);
+        const all = Object.fromEntries(tpl.columns.map((c, i) => [c.key, i]));
+        load(`Ejemplo de ${tpl.name.toLowerCase()}`, [{ name: tpl.name, aoa }], 0, null, (cols) => templateState(tpl, all, cols));
+      } else {
+        load(fileName, sheets, sheetIdx, null, (cols) => templateState(tpl, map, cols));
+      }
+    } catch (e) { setError(e.message); }
   }
 
   function onSample(id) {
@@ -381,7 +398,7 @@ function App() {
         ? <PaymentResult onLogin={() => setModal({ type: 'login', reason: 'Inicia sesión con el correo de tu cuenta para confirmar el pago.' })} onDone={refreshAccount} />
         : ds
           ? <Dashboard key={ds.key} ds={ds} initial={initial} cloud={cloud} onRefresh={cloudOn ? onRefresh : null} onReset={() => { setDs(null); setProject(null); setInitial(null); history.replaceState(null, '', '/'); }} onSheet={(i) => { try { load(ds.fileName, ds.sheets, i, ds.source); } catch (e) { alert(e.message); } }} />
-          : <Dropzone onFile={onFile} onSample={onSample} onConnect={cloudOn ? onConnect : null} locked={!account.status?.pro} busy={busy} error={error} />}
+          : <Dropzone onFile={onFile} onSample={onSample} onTemplate={(tpl) => setModal({ type: 'template', tpl })} onConnect={cloudOn ? onConnect : null} locked={!account.status?.pro} busy={busy} error={error} />}
 
       {cloudOn && <AccountSlot account={account} onLogin={() => setModal({ type: 'login' })} onOpenProjects={openProjects} onEmpresa={() => openEmpresa.current()} onPro={async () => { if (await gate('account', 'Inicia sesión para activar DataLite Pro.')) setModal({ type: 'pro' }); }} onSignOut={async () => { await signOut(); setAccount({ session: null, status: null }); showToast('Cerraste sesión.'); }} />}
       {modal?.type === 'login' && <LoginModal reason={modal.reason} onClose={() => setModal(null)} />}
@@ -390,6 +407,7 @@ function App() {
       {modal?.type === 'empresa' && <EmpresaModal account={account} onChanged={refreshAccount} onClose={() => setModal(null)} />}
       {modal?.type === 'name' && <NameModal title={modal.title} initial={modal.initial} orgName={modal.orgName} onSubmit={modal.submit} onClose={() => { modal.cancel?.(); setModal(null); }} />}
       {modal?.type === 'projects' && <ProjectsModal currentId={project?.id} onOpen={openProject} onDelete={onDeleteProject} onClose={() => setModal(null)} />}
+      {modal?.type === 'template' && <TemplateModal tpl={modal.tpl} onUse={onUseTemplate} onClose={() => setModal(null)} />}
       {modal?.type === 'msfiles' && <MicrosoftFilesModal onPick={(f) => loadSource(f)} onClose={() => setModal(null)} />}
       {modal?.type === 'share' && <ShareModal project={modal.project} account={account} onClose={() => { setModal(null); refreshAccount(); }} />}
       {toast}
