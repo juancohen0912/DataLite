@@ -110,5 +110,13 @@
       "destination": "/",
       "permanent": true
     }
-  ]
+  ],
+  "functions": {
+    "api/reportes/cron.js": {
+      "maxDuration": 60
+    },
+    "api/reportes/probar.js": {
+      "maxDuration": 60
+    }
+  }
 }

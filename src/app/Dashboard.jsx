@@ -181,6 +181,9 @@ export function Dashboard({ ds, initial, onReset, onSheet, onRefresh, cloud }) {
           {cloud && (cloud.role === 'owner' || !cloud.project) && (
             <button type="button" className="btn btn-ghost" onClick={() => cloud.onShare(getState)}><Icon name={cloud.pro ? 'share' : 'lock'} /> Compartir</button>
           )}
+          {cloud?.project && cloud.role === 'owner' && !readOnly && cloud.onSchedule && (
+            <button type="button" className="btn btn-ghost" onClick={() => cloud.onSchedule({ columns: model.columns, measures: model.measures, source: ds.source || null })}><Icon name={cloud.pro ? 'calendar' : 'lock'} /> Programar</button>
+          )}
           {cloud?.project && cloud.role === 'viewer' && (
             <button type="button" className="btn btn-ghost" onClick={cloud.onRequestEdit} disabled={cloud.editRequested}>{cloud.editRequested ? 'Permiso solicitado' : 'Pedir permiso para editar'}</button>
           )}

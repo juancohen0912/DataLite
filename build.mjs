@@ -28,6 +28,15 @@ await build({
   entryPoints: [out('src/ms-callback.js')], bundle: true, format: 'iife', minify: true, target: ['es2018'],
   outfile: out('assets/js/ms-callback.js'), logLevel: 'warning',
 });
+for (const f of ['conectar-listo', 'reportes-baja']) {
+  await build({ entryPoints: [out(`src/${f}.js`)], bundle: true, format: 'iife', minify: true, target: ['es2018'], outfile: out(`assets/js/${f}.js`), logLevel: 'warning' });
+}
+// Motor de reportes del servidor: mismo lector y cálculo del tablero, empaquetado para las funciones de Vercel
+await build({
+  entryPoints: [out('src/server/engine.js')], bundle: true, platform: 'node', format: 'esm', target: ['node20'],
+  outfile: out('api/_lib/engine.js'), legalComments: 'none', logLevel: 'warning',
+  banner: { js: '// Generado por build.mjs desde src/server/engine.js — no editar a mano.' },
+});
 await build({ entryPoints: [out('src/styles.css')], bundle: true, minify: true, outfile: out('assets/styles.css'), logLevel: 'warning' });
 
 const hash = (f) => createHash('sha256').update(readFileSync(out(f))).digest('hex').slice(0, 10);
