@@ -2,13 +2,13 @@
 {
   "title": "Política de privacidad | DataLite",
   "description": "Cómo DataLite trata tu información: tus archivos se procesan en tu navegador, qué guardamos si usas DataLite Pro, cómo se procesan los pagos y cuáles son tus derechos.",
-  "lastmod": "2026-10-28"
+  "lastmod": "2026-10-29"
 }
 -->
 <main id="contenido" class="prose-page">
   <article class="wrap prose">
     <h1>Política de privacidad</h1>
-    <p class="meta">Última actualización: 28 de octubre de 2026 (versión 2026-10-27)</p>
+    <p class="meta">Última actualización: 29 de octubre de 2026 (versión 2026-10-27)</p>
 
     <p>Esta política explica qué información trata DataLite (data-lite.vercel.app), con qué fin y qué derechos tienes. Se redactó conforme a la Ley 1581 de 2012 y el Decreto 1377 de 2013 de Colombia, y tiene en cuenta los principios del Reglamento General de Protección de Datos (RGPD) de la Unión Europea para visitantes de esa región.</p>
 
@@ -37,11 +37,21 @@
     <ul>
       <li><strong>Google:</strong> pedimos solo el permiso <em>drive.file</em>, que da acceso únicamente a los archivos que eliges en el selector de Google. No podemos ver el resto de tu Google Drive.</li>
       <li><strong>Microsoft:</strong> pedimos permiso de solo lectura de archivos (<em>Files.Read.All</em>) para buscar y abrir el libro que eliges. Nunca modificamos tus archivos.</li>
-      <li>El archivo se descarga directo de Google o Microsoft a tu navegador, igual que si lo subieras desde tu equipo. Los permisos de acceso (tokens) quedan solo en la memoria de esa pestaña y desaparecen al cerrarla: no los guardamos en nuestros servidores.</li>
+      <li>Al usar el tablero, el archivo se descarga directo de Google o Microsoft a tu navegador, igual que si lo subieras desde tu equipo. Esos permisos de acceso (tokens) quedan solo en la memoria de esa pestaña y desaparecen al cerrarla.</li>
+      <li><strong>Actualización automática (opcional):</strong> si programas reportes o alertas y activas «Actualización automática», Google o Microsoft nos entregan un permiso permanente de solo lectura con el mismo alcance descrito arriba. Lo guardamos cifrado (AES-256-GCM) con una clave que no está en la base de datos, y lo usamos únicamente para leer la hoja conectada justo antes de cada envío programado. El archivo se procesa en memoria en nuestro servidor para calcular el reporte y no se guarda. Puedes borrar ese permiso en cualquier momento con «Retirar permiso» en la ventana «Programar»; también se borra si eliminas tu cuenta.</li>
       <li>Si guardas el proyecto, guardamos el nombre y el identificador del archivo conectado para que puedas actualizarlo, junto con una copia de los datos como cualquier proyecto guardado.</li>
       <li>Puedes retirar el acceso cuando quieras desde la configuración de tu cuenta de Google (myaccount.google.com/permissions) o de Microsoft (account.live.com/consent/Manage para cuentas personales, myapps.microsoft.com para cuentas de trabajo).</li>
     </ul>
     <p>El uso y la transferencia a cualquier otra aplicación de la información recibida de las API de Google por parte de DataLite se ajustará a la <a href="https://developers.google.com/terms/api-services-user-data-policy" rel="noopener" target="_blank">Política de datos del usuario de los servicios de API de Google</a>, incluidos los requisitos de uso limitado. No usamos esos datos para publicidad, no los vendemos y no los usamos para entrenar modelos de inteligencia artificial.</p>
+
+    <h2>Reportes programados y alertas por correo (Pro y Empresa)</h2>
+    <ul>
+      <li>Para enviar reportes y alertas guardamos el nombre del envío, su horario, la condición de la alerta y los correos de los destinatarios que tú escribes. Quien programa el envío declara que los destinatarios esperan recibirlo.</li>
+      <li>Cada correo incluye un enlace para darse de baja en un clic. Guardamos el correo que se dio de baja solo para no volver a escribirle.</li>
+      <li>Guardamos un registro de cada envío (fecha, resultado y, en las alertas, el valor revisado) mientras exista la programación; se borra al borrarla o al borrar el proyecto.</li>
+      <li>Los correos salen desde nuestra cuenta de correo transaccional (Gmail, de Google).</li>
+      <li><strong>WhatsApp (próximamente):</strong> cuando habilitemos las alertas por WhatsApp, usaremos la API oficial de WhatsApp Business de Meta y solo escribiremos a números que tú agregues con la autorización de su titular. Actualizaremos esta política antes de activarlo.</li>
+    </ul>
 
     <h2>Pagos</h2>
     <p>Los pagos de DataLite Pro los procesa Wompi (Bancolombia S.A.), en su propia página segura. Allí ingresas tus datos de pago directamente, bajo la política de privacidad de Wompi; DataLite solo recibe la confirmación de la transacción (referencia, estado y monto) para activar tu plan. La información de facturación se conserva el tiempo que exige la ley tributaria colombiana.</p>
@@ -62,6 +72,7 @@
       <li>Prestar el servicio y mantenerlo seguro: interés legítimo.</li>
       <li>Medir el uso agregado para mejorar la herramienta: interés legítimo, sin cookies.</li>
       <li>Crear tu cuenta, guardar tus proyectos y compartirlos con las personas que elijas: tu autorización expresa, que das al iniciar sesión, y la ejecución del servicio que contratas.</li>
+      <li>Enviar los reportes y alertas que programas: ejecución del servicio que contratas; para los destinatarios, el interés legítimo de quien programa el envío, con baja en un clic.</li>
       <li>Procesar pagos y cumplir obligaciones contables y tributarias: ejecución del contrato y obligación legal.</li>
       <li>Mostrar publicidad que financia el servicio gratuito: tu consentimiento, que puedes retirar en cualquier momento. Con un plan Pro activo no se carga publicidad.</li>
     </ul>
@@ -72,6 +83,7 @@
     <h2>Conservación</h2>
     <p>Tu preferencia de cookies se guarda en el almacenamiento local de tu navegador hasta que la borres o la cambies. Los datos agregados de analítica se conservan según los plazos de Vercel. Si no guardas proyectos, no conservamos ningún dato de tus archivos porque nunca los recibimos.</p>
     <p>Los proyectos guardados se conservan mientras existan en tu cuenta. Cuando borras un proyecto, se eliminan su configuración, sus datos y la lista de invitados. Si tu plan vence, tus proyectos se mantienen en modo de solo lectura durante al menos 12 meses para que puedas renovar o descargarlos; después podemos borrarlos, avisándote antes por correo. Puedes pedir en cualquier momento que borremos tu cuenta completa.</p>
+    <p>Los permisos permanentes de lectura se conservan hasta que los retires, borres tu cuenta o el proveedor los revoque. Las programaciones y su registro de envíos se conservan mientras existan; la lista de bajas se conserva para respetar la decisión de quien se dio de baja.</p>
 
     <h2>Tus derechos</h2>
     <p>Como titular puedes conocer, actualizar, rectificar y suprimir tus datos, solicitar prueba de la autorización, revocarla y presentar quejas ante la Superintendencia de Industria y Comercio (SIC). Si estás en la Unión Europea, también tienes derecho de acceso, oposición, limitación y portabilidad, y a reclamar ante tu autoridad de protección de datos. Para ejercerlos, escríbeme a <a href="mailto:datalitecontact@gmail.com">datalitecontact@gmail.com</a>; responderé dentro de los plazos legales (10 días hábiles para consultas y 15 para reclamos en Colombia).</p>

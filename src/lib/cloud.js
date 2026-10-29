@@ -204,3 +204,43 @@ export async function confirmPayment(id) {
   if (!res.ok) throw new CloudError(data.error || 'No pudimos confirmar el pago.', 'error', res.status);
   return data;
 }
+
+// ------------------------------------------------------------------ Reportes programados y alertas
+
+async function apiPost(path, body, fallback) {
+  const token = await accessToken();
+  if (!token) throw new CloudError('Inicia sesión para continuar.', 'login', 401);
+  const res = await fetch(path, { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }, body: JSON.stringify(body) });
+  const data = await res.json().catch(() => ({}));
+  if (res.ok) return data;
+  throw new CloudError(data.error || fallback, res.status === 503 ? 'unavailable' : res.status === 429 ? 'limit' : res.status === 402 ? 'pro' : 'error', res.status);
+}
+
+/**
+ * Permiso permanente para leer la hoja conectada. Abre la ventana oficial del proveedor y resuelve
+ * cuando la página /conectar/listo avisa el resultado.
+ */
+export async function connectPermanent(provider) {
+  const w = window.open('about:blank', 'dl-conexion', 'width=520,height=700'); // se abre antes de esperar, para que no la bloqueen
+  if (!w) throw new CloudError('Permite las ventanas emergentes para este sitio y vuelve a intentarlo.', 'popup');
+  let url;
+  try { ({ url } = await apiPost('/api/conexiones/iniciar', { provider }, 'No pudimos iniciar la conexión.')); } catch (e) { w.close(); throw e; }
+  const u = new URL(url);
+  if (u.protocol !== 'https:' || !['accounts.google.com', 'login.microsoftonline.com'].includes(u.host)) { w.close(); throw new CloudError('Respuesta no válida.'); }
+  w.location.href = u.toString();
+  return new Promise((resolve, reject) => {
+    let bc = null;
+    const done = (fn, v) => { clearInterval(timer); window.removeEventListener('message', onMsg); try { bc?.close(); } catch { /* nada */ } fn(v); };
+    const onMsg = (e) => {
+      if (e.origin && e.origin !== location.origin) return;
+      if (e.data?.type !== 'dl-conexion') return;
+      e.data.ok ? done(resolve, e.data) : done(reject, new CloudError(e.data.result === 'negado' ? 'No diste el permiso.' : 'No se pudo guardar el permiso. Intenta de nuevo.', 'denied'));
+    };
+    const timer = setInterval(() => { if (w.closed) done(resolve, { ok: null }); }, 700); // al cerrarse, quien llama revisa el estado
+    window.addEventListener('message', onMsg);
+    try { bc = new BroadcastChannel('dl-conexion'); bc.onmessage = (e) => onMsg({ origin: location.origin, data: e.data }); } catch { /* sin soporte */ }
+  });
+}
+
+/** «Enviar ahora»: prueba un reporte o alerta guardado. */
+export const testSchedule = (id) => apiPost('/api/reportes/probar', { id }, 'No pudimos enviar la prueba.');

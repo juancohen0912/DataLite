@@ -62,6 +62,24 @@ Edita siempre en `src/` y vuelve a ejecutar `npm run bundle`; no edites los .htm
 - Conexiones a hojas en línea (Pro y Empresa): `src/lib/connectors.js`. Google Sheets con el selector oficial y permiso `drive.file` (exporta a .xlsx por la API de Drive); Excel en OneDrive/SharePoint con Microsoft Entra (código + PKCE en ventana emergente, retorno en `/conectar/microsoft`, descarga por Graph). Todo en el navegador; los tokens solo viven en memoria. Los identificadores públicos van en `CONNECT` de `src/config.js`; vacíos, los botones no aparecen.
 - Activación manual (soporte): `select public.dl_admin_activate_plan('correo@ejemplo.com');` con la cuenta de administrador.
 
+## Reportes programados y alertas
+
+- **Permiso permanente**: `api/conexiones/iniciar` → ventana de Google/Microsoft → `api/conexiones/callback`, que guarda el *refresh token* cifrado (AES-256-GCM, `TOKEN_ENC_KEY`) en `private.dl_connections`. El navegador nunca lo ve.
+- **Tarea horaria**: `pg_cron` (minuto 5 de cada hora) llama a `api/reportes/cron` con la clave guardada en Supabase Vault (`datalite_cron_key`), que el servidor valida con `dl_check_cron_key`.
+- **Motor**: `src/server/engine.js` se empaqueta en `api/_lib/engine.js` (`node build.mjs`); usa el mismo lector y cálculo del tablero.
+- **Baja**: cada correo trae un enlace firmado (`/reportes/baja`) y la cabecera `List-Unsubscribe` de un clic.
+- Variables en Vercel (sensibles): `TOKEN_ENC_KEY`, `GOOGLE_CLIENT_SECRET`, `MICROSOFT_CLIENT_SECRET` (además de `SMTP_*` y `SUPABASE_*`).
+- URI de redirección autorizada en Google Cloud y en Microsoft Entra (plataforma **Web**): `https://data-lite.vercel.app/api/conexiones/callback`.
+
+### WhatsApp (siguiente fase)
+
+`api/_lib/whatsapp.js` ya envía alertas con la API oficial de WhatsApp Business (Meta Cloud API), pero está apagado. Para activarlo:
+
+1. Crear la app en Meta for Developers, agregar WhatsApp y verificar un número de empresa.
+2. Crear y aprobar la plantilla `datalite_alerta` (categoría *Utilidad*, idioma `es`) con 4 variables: alerta, proyecto, valor y enlace.
+3. Agregar en Vercel `WHATSAPP_TOKEN` (token permanente de usuario del sistema), `WHATSAPP_PHONE_ID` y, si cambian, `WHATSAPP_TEMPLATE` y `WHATSAPP_LANG`.
+4. Habilitar el canal en `src/app/Schedules.jsx` (hoy dice «Próximamente»), pedir los números con autorización del titular y actualizar la política de privacidad.
+
 ## Agente de contenido semanal
 
 Una tarea programada toma cada semana el primer tema pendiente de `content-plan.md`, escribe la guía en `src/pages/guias/`, recompila y abre un pull request con un post sugerido para LinkedIn y otro para X. Para publicar, revisa el PR y haz merge. El índice de guías y el sitemap se actualizan solos.

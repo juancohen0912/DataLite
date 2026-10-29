@@ -546,3 +546,24 @@ body.modal-open { overflow: hidden; }
 .tpl-actions { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
 .tpl-map { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px 14px; }
 @media (max-width: 560px) { .tpl-cols, .tpl-map { grid-template-columns: 1fr; } }
+
+/* ---------- Reportes programados y alertas ---------- */
+.sched-conn { display: flex; gap: 14px; align-items: flex-start; justify-content: space-between; background: var(--sheet); border: 1px solid var(--line); border-radius: var(--r-sm); padding: 12px 14px; }
+.sched-conn p { margin: 4px 0 0; }
+.sched-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+.sched-list li { display: flex; gap: 12px; align-items: center; border: 1px solid var(--line); border-radius: var(--r-sm); padding: 10px 12px; }
+.sched-list li.off { opacity: .65; }
+.sched-info { display: flex; flex-direction: column; gap: 2px; flex: 1; min-width: 0; }
+.sched-info b { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sched-acts { display: flex; gap: 4px; flex-wrap: wrap; justify-content: flex-end; }
+.sched-kind { font-size: 12px; font-weight: 700; padding: 3px 8px; border-radius: 999px; background: var(--pivot-wash); color: var(--pivot-ink); white-space: nowrap; }
+.sched-kind.alert { background: #fdecdf; color: #9a3412; }
+.sched-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 10px; }
+.sched-rule, .sched-channels { border: 1px solid var(--line); border-radius: var(--r-sm); padding: 10px 12px 12px; margin: 0; }
+.sched-rule legend, .sched-channels legend { font-weight: 700; padding: 0 4px; }
+.sched-channels { display: flex; gap: 18px; flex-wrap: wrap; }
+.sched-channels label { display: inline-flex; gap: 6px; align-items: center; }
+.badge-soon { font-size: 11px; font-weight: 700; background: #eef1f0; color: var(--muted); border-radius: 999px; padding: 2px 7px; }
+.sched .row-gap { display: flex; gap: 8px; flex-wrap: wrap; }
+.sched .check { display: inline-flex; gap: 6px; align-items: center; }
+@media (max-width: 640px) { .sched-list li, .sched-conn { flex-direction: column; align-items: stretch; } .sched-acts { justify-content: flex-start; } }

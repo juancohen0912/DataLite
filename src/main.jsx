@@ -4,6 +4,7 @@ import { readFile, buildTable, MAX_FILE_MB } from './lib/data.js';
 import { SAMPLES, makeSample } from './lib/samples.js';
 import { Dashboard } from './app/Dashboard.jsx';
 import { track, useToast } from './app/ui.jsx';
+import { ScheduleModal } from './app/Schedules.jsx';
 import { AccountSlot, LoginModal, ConsentModal, ProModal, NameModal, ProjectsModal, ShareModal, PaymentResult, EmpresaModal } from './app/Cloud.jsx';
 import { ConnectButtons, MicrosoftFilesModal } from './app/Connect.jsx';
 import { TemplateList, TemplateModal } from './app/Templates.jsx';
@@ -387,6 +388,7 @@ function App() {
     project, role: project?.role || (ds ? 'owner' : null), pro: !!account.status?.pro, saving,
     editRequested: !!project?.edit_requested,
     signedIn: !!account.session, exports: account.status?.exports || null, trialAvailable: account.status?.trial?.available ?? !account.session,
+    onSchedule: async (info) => { if (await gate('pro', 'Los reportes programados y las alertas son del plan Pro o Empresa.')) setModal({ type: 'schedule', ...info }); },
     onSave, onShare, onOpenProjects: openProjects, onRequestEdit, onExport, onPro: () => openPro.current(),
     registerGetState: (fn) => { stateRef.current = fn; },
   } : null;
@@ -409,6 +411,7 @@ function App() {
       {modal?.type === 'projects' && <ProjectsModal currentId={project?.id} onOpen={openProject} onDelete={onDeleteProject} onClose={() => setModal(null)} />}
       {modal?.type === 'template' && <TemplateModal tpl={modal.tpl} onUse={onUseTemplate} onClose={() => setModal(null)} />}
       {modal?.type === 'msfiles' && <MicrosoftFilesModal onPick={(f) => loadSource(f)} onClose={() => setModal(null)} />}
+      {modal?.type === 'schedule' && project && <ScheduleModal project={project} columns={modal.columns} measures={modal.measures} source={modal.source} ownerEmail={account.status?.email} onClose={() => setModal(null)} />}
       {modal?.type === 'share' && <ShareModal project={modal.project} account={account} onClose={() => { setModal(null); refreshAccount(); }} />}
       {toast}
     </div>

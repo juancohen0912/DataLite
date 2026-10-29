@@ -12,7 +12,8 @@ const wrap76 = (s) => s.replace(/.{1,76}/g, '$&\r\n');
 const encWord = (s) => `=?UTF-8?B?${b64(String(s).replace(/[\r\n]+/g, ' '))}?=`;
 
 /** Arma el mensaje MIME (texto + HTML, ambos en base64: inmune a inyección de cabeceras y a líneas con punto). */
-export function buildMessage({ fromName, fromEmail, to, replyTo, subject, text, html, date = new Date() }) {
+export function buildMessage({ fromName, fromEmail, to, replyTo, subject, text, html, unsubscribe, date = new Date() }) {
+  if (unsubscribe && !/^https:\/\/[^\s<>"]{1,900}$/.test(unsubscribe)) throw new Error('enlace de baja no válido');
   if (!isSafeEmail(fromEmail) || !isSafeEmail(to) || (replyTo && !isSafeEmail(replyTo))) throw new Error('correo no válido');
   const boundary = `dl-${randomUUID()}`;
   const domain = fromEmail.split('@')[1];
@@ -25,6 +26,8 @@ export function buildMessage({ fromName, fromEmail, to, replyTo, subject, text, 
     `Message-ID: <${randomUUID()}@${domain}>`,
     'MIME-Version: 1.0',
     'Auto-Submitted: auto-generated',
+    unsubscribe ? `List-Unsubscribe: <${unsubscribe}>` : null,
+    unsubscribe ? 'List-Unsubscribe-Post: List-Unsubscribe=One-Click' : null,
     `Content-Type: multipart/alternative; boundary="${boundary}"`,
   ].filter(Boolean);
   const part = (type, body) => `--${boundary}\r\nContent-Type: ${type}; charset=UTF-8\r\nContent-Transfer-Encoding: base64\r\n\r\n${wrap76(b64(body))}`;
@@ -78,8 +81,8 @@ export function sendMail({ host, port = 465, user, pass, timeoutMs = 12000 }, { 
 
 // ------------------------------------------------------------------ Plantilla de invitación
 
-const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
-const clean = (s, max) => String(s || '').replace(/[\u0000-\u001f\u007f\u2028\u2029]/g, ' ').trim().slice(0, max);
+export const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+export const clean = (s, max) => String(s || '').replace(/[\u0000-\u001f\u007f\u2028\u2029]/g, ' ').trim().slice(0, max);
 
 export function inviteEmail({ ownerEmail, projectName, role, link }) {
   const name = clean(projectName, 120) || 'Proyecto';
