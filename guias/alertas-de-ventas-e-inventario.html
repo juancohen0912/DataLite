@@ -1,0 +1,158 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Alertas de ventas e inventario: cómo enterarte a tiempo de que algo va mal | DataLite</title>
+<meta name="description" content="Umbrales fijos, variación porcentual, punto de reorden y cómo evitar el exceso de avisos. Guía práctica para crear alertas útiles a partir de una hoja de cálculo.">
+<link rel="canonical" href="https://data-lite.vercel.app/guias/alertas-de-ventas-e-inventario">
+<meta name="robots" content="index, follow, max-image-preview:large">
+<meta name="google-adsense-account" content="ca-pub-9781408296787253">
+<meta name="theme-color" content="#15231D">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="DataLite">
+<meta property="og:locale" content="es_CO">
+<meta property="og:title" content="Alertas de ventas e inventario: cómo enterarte a tiempo de que algo va mal | DataLite">
+<meta property="og:description" content="Umbrales fijos, variación porcentual, punto de reorden y cómo evitar el exceso de avisos. Guía práctica para crear alertas útiles a partir de una hoja de cálculo.">
+<meta property="og:url" content="https://data-lite.vercel.app/guias/alertas-de-ventas-e-inventario">
+<meta property="og:image" content="https://data-lite.vercel.app/assets/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/assets/icon-180.png">
+<link rel="manifest" href="/site.webmanifest">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:wght@400;500;600;700;800&display=swap">
+<link rel="stylesheet" href="/assets/styles.css?v=de10adecd2">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"Article","headline":"Alertas de ventas e inventario: cómo diseñarlas para que sirvan","description":"Umbrales fijos, variación porcentual, punto de reorden y cómo evitar el exceso de avisos. Guía práctica para crear alertas útiles a partir de una hoja de cálculo.","inLanguage":"es","datePublished":"2026-10-29","dateModified":"2026-10-29","author":{"@type":"Person","name":"Juan Cohen","url":"https://data-lite.vercel.app/acerca"},"publisher":{"@type":"Organization","name":"DataLite","logo":{"@type":"ImageObject","url":"https://data-lite.vercel.app/assets/icon-512.png"}},"mainEntityOfPage":"https://data-lite.vercel.app/guias/alertas-de-ventas-e-inventario","image":"https://data-lite.vercel.app/assets/og.png"}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Inicio","item":"https://data-lite.vercel.app/"},{"@type":"ListItem","position":2,"name":"Guías","item":"https://data-lite.vercel.app/guias/"},{"@type":"ListItem","position":3,"name":"Alertas de ventas e inventario: cómo diseñarlas para que sirvan","item":"https://data-lite.vercel.app/guias/alertas-de-ventas-e-inventario"}]}</script>
+<script defer src="/assets/js/consent.js?v=8cd5b56715"></script>
+
+</head>
+<body data-ads="1">
+
+<a class="skip" href="#contenido">Saltar al contenido</a>
+<header class="site-head">
+  <div class="wrap">
+    <a class="brand" href="/" aria-label="DataLite, inicio">
+      <svg class="brand-mark" viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="6" fill="#15231D"/><path d="M8 23V15M14 23V9M20 23V13M26 23v-5" stroke="#F5C542" stroke-width="3" stroke-linecap="round"/><path d="M6 25.5h21" stroke="#0E7A55" stroke-width="2" stroke-linecap="round"/></svg>
+      DataLite
+    </a>
+    <nav class="nav" aria-label="Principal">
+      <a href="/#como-funciona">Cómo funciona</a>
+      <a href="/guias/" class="nav-keep">Guías</a>
+      <a href="/#planes">Planes</a>
+      <a class="nav-cta" href="/#herramienta">Crear dashboard</a>
+      <span id="account-slot" class="account-slot"></span>
+    </nav>
+  </div>
+</header>
+<main id="contenido" class="prose-page">
+  <article class="wrap prose">
+    <p class="crumbs"><a href="/">Inicio</a> / <a href="/guias/">Guías</a></p>
+    <h1>Alertas de ventas e inventario: cómo diseñarlas para que sirvan</h1>
+    <p class="meta">Por Juan Cohen. Lectura de 8 minutos.</p>
+
+    <p>Un tablero responde preguntas cuando alguien lo abre. Una alerta hace lo contrario: te busca a ti cuando pasa algo que merece atención. Bien diseñada, evita que te enteres de una caída de ventas o de un faltante de inventario cuando ya es tarde. Mal diseñada, se convierte en ruido que todos ignoran. Esta guía explica cómo definir alertas que realmente se lean.</p>
+
+    <h2>1. Decide qué decisión dispara la alerta</h2>
+    <p>Cada alerta debe tener una acción asociada. «Las ventas del mes bajaron» no dice qué hacer; «las ventas de Medellín bajaron más de 15 % frente al mes anterior: revisar con el asesor de la zona» sí. Si no sabes qué harías al recibirla, probablemente no necesitas esa alerta.</p>
+
+    <h2>2. Umbral fijo o variación: dos tipos de condición</h2>
+    <table>
+      <thead><tr><th>Tipo</th><th>Ejemplo</th><th>Cuándo usarlo</th></tr></thead>
+      <tbody>
+        <tr><td>Umbral fijo</td><td>Inventario de un producto menor que 500 unidades</td><td>Cuando existe un límite físico, contractual o de seguridad.</td></tr>
+        <tr><td>Variación porcentual</td><td>Ventas del mes caen más de 10 % frente al mes anterior</td><td>Cuando importa la tendencia y no el valor absoluto.</td></tr>
+      </tbody>
+    </table>
+    <p>Un error común es usar umbrales fijos para métricas que crecen: una meta de ventas de 50 millones que tenía sentido en enero deja de tenerlo en diciembre. Para esos casos, la variación porcentual se adapta sola.</p>
+
+    <h2>3. Compara periodos completos y comparables</h2>
+    <ul>
+      <li><strong>Periodos completos.</strong> Comparar el mes en curso (que va por el día 10) con el mes anterior completo siempre mostrará una «caída». Revisa la alerta cuando el periodo haya cerrado, o compara contra el mismo número de días.</li>
+      <li><strong>Estacionalidad.</strong> Si diciembre siempre vende el doble, una caída en enero es normal. En negocios muy estacionales, compara contra el mismo mes del año anterior.</li>
+      <li><strong>Volumen mínimo.</strong> Pasar de 2 a 1 venta es una caída del 50 %, pero no es una emergencia. Combina la variación con un mínimo de volumen para no alarmarte por cifras pequeñas.</li>
+    </ul>
+
+    <h2>4. Inventario: el punto de reorden</h2>
+    <p>Para inventario, el umbral no debería salir de la intuición. Una fórmula sencilla y muy usada es el punto de reorden:</p>
+    <p><strong>Punto de reorden = demanda diaria promedio × tiempo de entrega del proveedor (días) + stock de seguridad</strong></p>
+    <p>Ejemplo: si vendes 40 unidades al día, el proveedor tarda 7 días en entregar y quieres un colchón de 3 días (120 unidades), el punto de reorden es 40 × 7 + 120 = 400 unidades. Esa cifra es tu umbral: cuando el inventario baje de 400, es momento de pedir.</p>
+    <p>Revisa el cálculo cada trimestre: la demanda y los tiempos de entrega cambian.</p>
+
+    <h2>5. Avisa una vez, no todos los días</h2>
+    <p>Si las ventas llevan tres semanas por debajo del umbral, recibir el mismo correo cada mañana no aporta nada nuevo. Lo recomendable es avisar cuando la condición <em>pasa</em> de normal a cumplida, y volver a avisar solo si se normaliza y vuelve a cumplirse. Así funcionan las alertas de DataLite: revisan la hoja en el horario que elijas y escriben una sola vez por cada cambio.</p>
+
+    <h2>6. Pocas alertas, bien dirigidas</h2>
+    <ul>
+      <li>Empieza con dos o tres alertas que cubran lo más crítico: caída de ventas, inventario bajo y cartera vencida.</li>
+      <li>Envía cada alerta a quien puede actuar, no a toda la empresa.</li>
+      <li>Ponle un nombre que diga qué pasó: «Inventario bajo – Bodega Norte» se entiende sin abrir el correo.</li>
+      <li>Revisa cada mes cuántas veces se disparó cada alerta. Si una nunca se dispara o se dispara siempre, ajusta el umbral.</li>
+    </ul>
+
+    <h2>Ejemplos listos para adaptar</h2>
+    <table>
+      <thead><tr><th>Área</th><th>Condición</th><th>Revisión</th></tr></thead>
+      <tbody>
+        <tr><td>Ventas</td><td>Suma de ventas del mes, variación menor que −10 % frente al mes anterior</td><td>Mensual, el día 1</td></tr>
+        <tr><td>Inventario</td><td>Unidades disponibles menor que el punto de reorden</td><td>Diaria</td></tr>
+        <tr><td>Cartera</td><td>Cartera vencida mayor que el 15 % del total</td><td>Semanal</td></tr>
+        <tr><td>Gastos</td><td>Gasto del mes mayor que el presupuesto</td><td>Semanal</td></tr>
+        <tr><td>Producción</td><td>Producción diaria variación menor que −5 % frente al día anterior</td><td>Diaria</td></tr>
+      </tbody>
+    </table>
+
+    <div class="cta-box">
+      <h2>Crea tu primera alerta</h2>
+      <p>Conecta tu Google Sheets o Excel en línea, elige la métrica y la condición. DataLite te escribe cuando se cumpla.</p>
+      <a class="btn btn-primary" href="/#herramienta">Empezar</a>
+    </div>
+
+    <div class="ad-slot" data-slot="article"></div>
+
+    <p>Para calcular los indicadores de cartera que alimentan estas alertas, lee <a href="/guias/indicadores-de-cartera-en-excel">indicadores de cartera y cobranza en Excel</a>. Y si quieres recibir además un resumen periódico, mira <a href="/guias/reporte-automatico-por-correo">cómo enviar un reporte por correo automáticamente</a>.</p>
+  </article>
+</main>
+
+
+<footer class="site-foot">
+  <div class="wrap">
+    <div class="foot-grid">
+      <div>
+        <p style="color:#fff;font-weight:800;font-size:18px;margin-bottom:6px">DataLite</p>
+        <p>Dashboards a partir de Excel y CSV, directo en tu navegador. Hecho en Bogotá, Colombia.</p>
+        <p><a href="https://buymeacoffee.com/jgcohen" rel="noopener" target="_blank">Invítame un café en Buy Me a Coffee</a></p>
+      </div>
+      <div>
+        <h2>Producto</h2>
+        <ul><li><a href="/#herramienta">Crear dashboard</a></li><li><a href="/#planes">Planes</a></li><li><a href="/#preguntas">Preguntas frecuentes</a></li></ul>
+      </div>
+      <div>
+        <h2>Aprende</h2>
+        <ul>
+          <li><a href="/guias/">Todas las guías</a></li>
+          <li><a href="/guias/tabla-dinamica-online">Tabla dinámica online</a></li>
+          <li><a href="/guias/dashboard-en-excel">Dashboard desde Excel</a></li>
+          <li><a href="/guias/alternativa-power-bi-gratis">Alternativa a Power BI</a></li>
+        </ul>
+      </div>
+      <div>
+        <h2>Legal</h2>
+        <ul>
+          <li><a href="/acerca">Acerca de y contacto</a></li>
+          <li><a href="/privacidad">Política de privacidad</a></li>
+          <li><a href="/cookies">Política de cookies</a></li>
+          <li><a href="/terminos">Términos de uso</a></li>
+          <li><button type="button" class="linkish" data-open-cookies>Configurar cookies</button></li>
+        </ul>
+      </div>
+    </div>
+    <p class="foot-legal">© <span data-year>2026</span> DataLite, creado por Juan Cohen (jgcohen). El análisis de tus archivos ocurre en tu dispositivo; solo los proyectos que guardas con DataLite Pro se almacenan cifrados en la nube. Los resultados son informativos: verifica tus datos antes de tomar decisiones.</p>
+  </div>
+</footer>
+</body>
+</html>

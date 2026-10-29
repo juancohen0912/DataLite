@@ -1,0 +1,75 @@
+<!--
+{
+  "title": "Indicadores de cartera y cobranza en Excel: rotación, días de cartera y edades | DataLite",
+  "h1": "Indicadores de cartera y cobranza en Excel",
+  "description": "Cómo calcular en Excel la rotación de cartera, los días de cartera, el porcentaje vencido y las edades de vencimiento, con fórmulas y un ejemplo.",
+  "article": { "published": "2026-10-29" }
+}
+-->
+<main id="contenido" class="prose-page">
+  <article class="wrap prose">
+    <p class="crumbs"><a href="/">Inicio</a> / <a href="/guias/">Guías</a></p>
+    <h1>Indicadores de cartera y cobranza en Excel</h1>
+    <p class="meta">Por Juan Cohen. Lectura de 9 minutos.</p>
+
+    <p>Vender a crédito es vender dos veces: primero el producto y después el cobro. Una empresa puede tener buenas ventas y quedarse sin caja si la cartera crece sin control. Con una hoja de facturas bien organizada y cuatro indicadores puedes saber cuánto te deben, cuánto tardan en pagarte y dónde está el riesgo.</p>
+
+    <h2>1. La hoja de partida</h2>
+    <p>Necesitas una fila por factura con, al menos, estas columnas:</p>
+    <table>
+      <thead><tr><th>Columna</th><th>Ejemplo</th></tr></thead>
+      <tbody>
+        <tr><td>Cliente</td><td>Ferretería El Tornillo</td></tr>
+        <tr><td>Factura</td><td>FE-1045</td></tr>
+        <tr><td>Fecha de emisión</td><td>02/09/2026</td></tr>
+        <tr><td>Fecha de vencimiento</td><td>02/10/2026</td></tr>
+        <tr><td>Valor</td><td>4.850.000</td></tr>
+        <tr><td>Saldo pendiente</td><td>4.850.000</td></tr>
+        <tr><td>Asesor o zona</td><td>Zona Centro</td></tr>
+      </tbody>
+    </table>
+    <p>Usa fechas reales (no texto) y deja el saldo en cero cuando la factura se pague completa. Así la misma hoja sirve para calcular todo lo demás.</p>
+
+    <h2>2. Días vencidos y edades de cartera</h2>
+    <p>Agrega una columna «Días vencidos» con la diferencia entre hoy y la fecha de vencimiento (en Excel en español con configuración de Colombia, los argumentos se separan con punto y coma):</p>
+    <p><code>=SI(F2&gt;0; HOY()-D2; 0)</code></p>
+    <p>Donde F2 es el saldo y D2 la fecha de vencimiento. Un valor negativo o cero significa que la factura todavía no vence. Luego clasifica cada factura en una edad:</p>
+    <p><code>=SI(G2&lt;=0;"Corriente";SI(G2&lt;=30;"1 a 30";SI(G2&lt;=60;"31 a 60";SI(G2&lt;=90;"61 a 90";"Más de 90"))))</code></p>
+    <p>Con una tabla dinámica que sume el saldo por edad obtienes el informe de <strong>edades de cartera</strong>, el más usado en cobranza. Lo sano es que la mayor parte esté en «Corriente» y que el tramo «Más de 90» sea pequeño, porque la probabilidad de cobrar baja con cada mes de mora.</p>
+
+    <h2>3. Porcentaje de cartera vencida</h2>
+    <p><strong>Cartera vencida % = saldo con días vencidos mayores que cero ÷ saldo total</strong></p>
+    <p>En Excel: <code>=SUMAR.SI(G:G;"&gt;0";F:F)/SUMA(F:F)</code></p>
+    <p>Es el indicador más fácil de comunicar y el mejor candidato para una alerta: si supera el nivel que tu empresa considera aceptable, conviene revisar clientes y asesores.</p>
+
+    <h2>4. Rotación de cartera y días de cartera</h2>
+    <p>La rotación indica cuántas veces en el periodo se convierte la cartera en efectivo:</p>
+    <p><strong>Rotación = ventas a crédito del periodo ÷ cartera promedio del periodo</strong></p>
+    <p>Los días de cartera (también llamados periodo promedio de cobro) traducen esa rotación a días:</p>
+    <p><strong>Días de cartera = días del periodo ÷ rotación</strong> (o, lo que es igual, cartera promedio ÷ ventas a crédito × días del periodo)</p>
+    <p>Ejemplo: en un trimestre (90 días) vendiste a crédito 600 millones y la cartera promedio fue de 200 millones. La rotación es 600 ÷ 200 = 3 y los días de cartera son 90 ÷ 3 = 30 días. Si das plazos de 30 días, estás cobrando a tiempo; si el resultado fuera 55 días, tus clientes te están financiando con tu propia caja.</p>
+    <p>La cartera promedio puede calcularse como el promedio entre el saldo al inicio y al final del periodo. Usa siempre el mismo método para poder comparar periodos.</p>
+
+    <h2>5. Concentración: ¿cuánto depende de pocos clientes?</h2>
+    <p>Ordena los clientes por saldo pendiente y calcula qué porcentaje del total representan los cinco primeros. Si un solo cliente tiene un tercio de tu cartera, un retraso suyo afecta toda la caja. Un <a href="/guias/grafico-de-pareto-online">gráfico de Pareto</a> muestra esta concentración de un vistazo.</p>
+
+    <h2>6. Un tablero de cartera en una página</h2>
+    <ul>
+      <li>Arriba: saldo total, cartera vencida %, días de cartera y número de facturas vencidas.</li>
+      <li>Barras por edad de cartera (corriente, 1 a 30, 31 a 60, 61 a 90, más de 90).</li>
+      <li>Ranking de clientes con mayor saldo vencido.</li>
+      <li>Cartera vencida por asesor o zona, para saber a quién acompañar.</li>
+    </ul>
+    <p>La plantilla «Cartera y cobranza» de DataLite arma esta vista con tu hoja: saldo total, saldo por edad de vencimiento, clientes con mayor saldo y cartera por vendedor. Sube tu archivo, asocia tus columnas y el tablero se arma solo.</p>
+
+    <div class="cta-box">
+      <h2>Arma tu tablero de cartera</h2>
+      <p>Usa la plantilla de cartera con tus datos o con datos de ejemplo. El análisis ocurre en tu navegador.</p>
+      <a class="btn btn-primary" href="/#herramienta">Usar la plantilla</a>
+    </div>
+
+    <div class="ad-slot" data-slot="article"></div>
+
+    <p>¿Quieres un aviso cuando la cartera vencida pase de cierto nivel? Lee <a href="/guias/alertas-de-ventas-e-inventario">cómo diseñar alertas que sirvan</a>. Para resumir por cliente o zona, revisa <a href="/guias/tabla-dinamica-online">cómo hacer una tabla dinámica online</a>.</p>
+  </article>
+</main>

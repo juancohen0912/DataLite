@@ -20,8 +20,11 @@ function save(ads) {
 // Quien tiene DataLite Pro navega sin publicidad (la marca la escribe la app al validar la cuenta).
 const isPro = () => { try { return localStorage.getItem('dl-plan') === 'pro'; } catch { return false; } };
 
+// Solo se cargan anuncios en páginas marcadas con contenido (data-ads en <body>), nunca en pantallas de utilidad
+const adsAllowed = () => document.body?.dataset.ads === '1';
+
 function loadAds() {
-  if (adsLoaded || isPro()) return;
+  if (adsLoaded || isPro() || !adsAllowed()) return;
   adsLoaded = true;
   const s = document.createElement('script');
   s.async = true;

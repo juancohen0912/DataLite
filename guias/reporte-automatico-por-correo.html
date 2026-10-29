@@ -1,0 +1,162 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Cómo enviar un reporte de Excel por correo automáticamente (sin macros) | DataLite</title>
+<meta name="description" content="Tres formas de programar el envío de un reporte de Excel o Google Sheets por correo, sin dejar el computador prendido: ventajas, límites y buenas prácticas.">
+<link rel="canonical" href="https://data-lite.vercel.app/guias/reporte-automatico-por-correo">
+<meta name="robots" content="index, follow, max-image-preview:large">
+<meta name="google-adsense-account" content="ca-pub-9781408296787253">
+<meta name="theme-color" content="#15231D">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="DataLite">
+<meta property="og:locale" content="es_CO">
+<meta property="og:title" content="Cómo enviar un reporte de Excel por correo automáticamente (sin macros) | DataLite">
+<meta property="og:description" content="Tres formas de programar el envío de un reporte de Excel o Google Sheets por correo, sin dejar el computador prendido: ventajas, límites y buenas prácticas.">
+<meta property="og:url" content="https://data-lite.vercel.app/guias/reporte-automatico-por-correo">
+<meta property="og:image" content="https://data-lite.vercel.app/assets/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/assets/icon-180.png">
+<link rel="manifest" href="/site.webmanifest">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:wght@400;500;600;700;800&display=swap">
+<link rel="stylesheet" href="/assets/styles.css?v=de10adecd2">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"Article","headline":"Cómo enviar un reporte de Excel por correo automáticamente","description":"Tres formas de programar el envío de un reporte de Excel o Google Sheets por correo, sin dejar el computador prendido: ventajas, límites y buenas prácticas.","inLanguage":"es","datePublished":"2026-10-29","dateModified":"2026-10-29","author":{"@type":"Person","name":"Juan Cohen","url":"https://data-lite.vercel.app/acerca"},"publisher":{"@type":"Organization","name":"DataLite","logo":{"@type":"ImageObject","url":"https://data-lite.vercel.app/assets/icon-512.png"}},"mainEntityOfPage":"https://data-lite.vercel.app/guias/reporte-automatico-por-correo","image":"https://data-lite.vercel.app/assets/og.png"}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Inicio","item":"https://data-lite.vercel.app/"},{"@type":"ListItem","position":2,"name":"Guías","item":"https://data-lite.vercel.app/guias/"},{"@type":"ListItem","position":3,"name":"Cómo enviar un reporte de Excel por correo automáticamente","item":"https://data-lite.vercel.app/guias/reporte-automatico-por-correo"}]}</script>
+<script defer src="/assets/js/consent.js?v=8cd5b56715"></script>
+
+</head>
+<body data-ads="1">
+
+<a class="skip" href="#contenido">Saltar al contenido</a>
+<header class="site-head">
+  <div class="wrap">
+    <a class="brand" href="/" aria-label="DataLite, inicio">
+      <svg class="brand-mark" viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="6" fill="#15231D"/><path d="M8 23V15M14 23V9M20 23V13M26 23v-5" stroke="#F5C542" stroke-width="3" stroke-linecap="round"/><path d="M6 25.5h21" stroke="#0E7A55" stroke-width="2" stroke-linecap="round"/></svg>
+      DataLite
+    </a>
+    <nav class="nav" aria-label="Principal">
+      <a href="/#como-funciona">Cómo funciona</a>
+      <a href="/guias/" class="nav-keep">Guías</a>
+      <a href="/#planes">Planes</a>
+      <a class="nav-cta" href="/#herramienta">Crear dashboard</a>
+      <span id="account-slot" class="account-slot"></span>
+    </nav>
+  </div>
+</header>
+<main id="contenido" class="prose-page">
+  <article class="wrap prose">
+    <p class="crumbs"><a href="/">Inicio</a> / <a href="/guias/">Guías</a></p>
+    <h1>Cómo enviar un reporte de Excel por correo automáticamente</h1>
+    <p class="meta">Por Juan Cohen. Lectura de 8 minutos.</p>
+
+    <p>En muchas empresas el lunes empieza igual: alguien abre el Excel de ventas, actualiza los datos, copia los gráficos, los pega en un correo y lo envía a gerencia. Son 30 o 40 minutos que se repiten cada semana y que dependen de que esa persona no esté de vacaciones. Esta guía muestra cómo automatizar ese envío sin macros y sin dejar un computador prendido, y qué cuidar para que el reporte siga siendo útil.</p>
+
+    <h2>Antes de automatizar: ¿qué debe tener un buen reporte por correo?</h2>
+    <p>Automatizar un mal reporte solo hace que llegue más rápido. Revisa primero tres cosas:</p>
+    <ul>
+      <li><strong>Pocas cifras, bien elegidas.</strong> Entre tres y seis indicadores con su variación frente al periodo anterior. Si el lector tiene que hacer cuentas, el reporte no está cumpliendo su función.</li>
+      <li><strong>El dato en el cuerpo del correo, no solo en un adjunto.</strong> Mucha gente lee el correo en el celular y nunca abre el archivo. Los indicadores deben verse sin descargar nada.</li>
+      <li><strong>Un enlace para profundizar.</strong> El correo resume; el tablero completo responde las preguntas de seguimiento.</li>
+    </ul>
+
+    <h2>Opción 1: Power Automate (Excel en OneDrive o SharePoint)</h2>
+    <p>Si tu empresa usa Microsoft 365, Power Automate permite crear un <em>flujo programado</em> que se ejecuta, por ejemplo, cada lunes a las 7:00. El flujo puede leer filas de una tabla de Excel guardada en OneDrive o SharePoint y enviar un correo desde Outlook.</p>
+    <ul>
+      <li><strong>Ventajas:</strong> corre en la nube, no necesita tu computador encendido y se integra con Teams y Outlook.</li>
+      <li><strong>Límites:</strong> los datos deben estar en una <em>tabla</em> de Excel (Insertar → Tabla), armar un correo con formato exige algo de práctica con expresiones, y los gráficos no se copian solos: hay que construir el texto o una tabla HTML.</li>
+      <li><strong>Ideal para:</strong> avisos simples («hay 12 facturas vencidas») o reenviar el archivo completo.</li>
+    </ul>
+
+    <h2>Opción 2: Google Apps Script (Google Sheets)</h2>
+    <p>En Google Sheets, el menú Extensiones → Apps Script abre un editor donde puedes escribir una función que lea celdas y envíe un correo con <code>MailApp.sendEmail</code>. Luego, en «Activadores», la programas por tiempo: cada día, cada semana o cada mes.</p>
+    <ul>
+      <li><strong>Ventajas:</strong> es gratis y no requiere instalar nada.</li>
+      <li><strong>Límites:</strong> hay que programar en JavaScript, y Google limita la cantidad de destinatarios diarios (es menor en cuentas personales que en cuentas de Google Workspace). Si el script falla, nadie se entera a menos que lo revises.</li>
+      <li><strong>Ideal para:</strong> quien se siente cómodo con código y necesita algo muy a la medida.</li>
+    </ul>
+
+    <h2>Opción 3: un tablero que se envía solo</h2>
+    <p>La tercera vía es usar una herramienta de tableros que lea la hoja directamente y envíe el resumen en el horario elegido. Es lo que hace DataLite con los <strong>reportes programados</strong> (planes Pro y Empresa): conectas tu Google Sheets o tu Excel en línea, armas el tablero una vez y eliges cuándo llega, a quién y con qué frecuencia.</p>
+    <ul>
+      <li>Antes de cada envío se lee la versión más reciente de la hoja, con los filtros que guardaste.</li>
+      <li>El correo trae los indicadores con su variación y los gráficos principales como barras, legibles en el celular, más un botón para abrir el tablero.</li>
+      <li>El permiso para leer la hoja es de solo lectura, se guarda cifrado y puedes retirarlo cuando quieras.</li>
+      <li>Cada destinatario puede darse de baja con un clic.</li>
+    </ul>
+
+    <h2>Comparación rápida</h2>
+    <table>
+      <thead><tr><th></th><th>Power Automate</th><th>Apps Script</th><th>Tablero programado</th></tr></thead>
+      <tbody>
+        <tr><td>Requiere programar</td><td>Poco</td><td>Sí</td><td>No</td></tr>
+        <tr><td>Gráficos en el correo</td><td>Manual</td><td>Manual</td><td>Automático</td></tr>
+        <tr><td>Fuente de datos</td><td>Excel en OneDrive/SharePoint</td><td>Google Sheets</td><td>Ambas</td></tr>
+        <tr><td>Aviso si algo falla</td><td>Configurable</td><td>No por defecto</td><td>Sí, al dueño</td></tr>
+      </tbody>
+    </table>
+
+    <h2>Buenas prácticas que aplican a cualquier opción</h2>
+    <ol>
+      <li><strong>Elige bien la hora.</strong> Si los datos se cargan el lunes a las 8:00, programar el envío a las 7:00 manda cifras de la semana anterior incompletas.</li>
+      <li><strong>Envía solo a quien lo necesita.</strong> Un reporte que nadie lee entrena a la gente a ignorar los correos automáticos, incluidos los importantes.</li>
+      <li><strong>Cuida los datos personales.</strong> Si la hoja tiene nombres de clientes, cédulas o teléfonos, no los pongas en el correo: resume por categoría, ciudad o vendedor. En Colombia, la Ley 1581 de 2012 exige tratar esos datos solo para la finalidad autorizada.</li>
+      <li><strong>Deja una forma de darse de baja.</strong> Es una cortesía básica y evita que tus correos terminen en la carpeta de spam.</li>
+      <li><strong>Revisa la estructura de la hoja.</strong> Si alguien cambia el nombre de una columna, la automatización puede romperse. Documenta qué columnas no se deben tocar.</li>
+    </ol>
+
+    <div class="cta-box">
+      <h2>Programa tu primer reporte</h2>
+      <p>Conecta tu hoja, arma el tablero y elige cuándo llega. Sin macros y sin dejar el computador encendido.</p>
+      <a class="btn btn-primary" href="/#herramienta">Crear dashboard</a>
+    </div>
+
+    <div class="ad-slot" data-slot="article"></div>
+
+    <p>¿Quieres que te avisen solo cuando algo cambia? Lee <a href="/guias/alertas-de-ventas-e-inventario">cómo diseñar alertas de ventas e inventario</a>. ¿Aún no tienes el tablero? Empieza por <a href="/guias/dashboard-en-excel">cómo hacer un dashboard a partir de un Excel</a>.</p>
+  </article>
+</main>
+
+
+<footer class="site-foot">
+  <div class="wrap">
+    <div class="foot-grid">
+      <div>
+        <p style="color:#fff;font-weight:800;font-size:18px;margin-bottom:6px">DataLite</p>
+        <p>Dashboards a partir de Excel y CSV, directo en tu navegador. Hecho en Bogotá, Colombia.</p>
+        <p><a href="https://buymeacoffee.com/jgcohen" rel="noopener" target="_blank">Invítame un café en Buy Me a Coffee</a></p>
+      </div>
+      <div>
+        <h2>Producto</h2>
+        <ul><li><a href="/#herramienta">Crear dashboard</a></li><li><a href="/#planes">Planes</a></li><li><a href="/#preguntas">Preguntas frecuentes</a></li></ul>
+      </div>
+      <div>
+        <h2>Aprende</h2>
+        <ul>
+          <li><a href="/guias/">Todas las guías</a></li>
+          <li><a href="/guias/tabla-dinamica-online">Tabla dinámica online</a></li>
+          <li><a href="/guias/dashboard-en-excel">Dashboard desde Excel</a></li>
+          <li><a href="/guias/alternativa-power-bi-gratis">Alternativa a Power BI</a></li>
+        </ul>
+      </div>
+      <div>
+        <h2>Legal</h2>
+        <ul>
+          <li><a href="/acerca">Acerca de y contacto</a></li>
+          <li><a href="/privacidad">Política de privacidad</a></li>
+          <li><a href="/cookies">Política de cookies</a></li>
+          <li><a href="/terminos">Términos de uso</a></li>
+          <li><button type="button" class="linkish" data-open-cookies>Configurar cookies</button></li>
+        </ul>
+      </div>
+    </div>
+    <p class="foot-legal">© <span data-year>2026</span> DataLite, creado por Juan Cohen (jgcohen). El análisis de tus archivos ocurre en tu dispositivo; solo los proyectos que guardas con DataLite Pro se almacenan cifrados en la nube. Los resultados son informativos: verifica tus datos antes de tomar decisiones.</p>
+  </div>
+</footer>
+</body>
+</html>
