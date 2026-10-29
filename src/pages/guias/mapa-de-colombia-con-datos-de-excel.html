@@ -1,0 +1,65 @@
+<!--
+{
+  "title": "Cómo hacer un mapa de Colombia con datos de Excel por departamento o municipio | DataLite",
+  "h1": "Cómo hacer un mapa de Colombia con datos de Excel",
+  "description": "Prepara tu hoja para mapear ventas, clientes o producción por departamento o municipio de Colombia: nombres, códigos DANE, mapas de color y de burbujas.",
+  "article": { "published": "2026-10-29" }
+}
+-->
+<main id="contenido" class="prose-page">
+  <article class="wrap prose">
+    <p class="crumbs"><a href="/">Inicio</a> / <a href="/guias/">Guías</a></p>
+    <h1>Cómo hacer un mapa de Colombia con datos de Excel</h1>
+    <p class="meta">Por Juan Cohen. Lectura de 7 minutos.</p>
+
+    <p>Una tabla con 30 departamentos y sus ventas es difícil de leer; el mismo dato en un mapa muestra al instante dónde está concentrado el negocio y qué regiones están quedando atrás. El reto casi nunca es el mapa en sí, sino que los nombres de tu hoja coincidan con los del mapa. Esta guía explica cómo preparar los datos para que eso no falle.</p>
+
+    <h2>1. Elige el nivel: departamento o municipio</h2>
+    <p>Colombia tiene 32 departamentos más Bogotá, D. C., y más de 1.100 municipios. Para una vista nacional, el nivel de departamento suele ser suficiente y más legible. El nivel de municipio sirve cuando tus datos están concentrados en pocas ciudades o cuando necesitas ver diferencias dentro de una región.</p>
+
+    <h2>2. Escribe los nombres de forma consistente</h2>
+    <p>Los problemas más comunes al cruzar una hoja con un mapa son:</p>
+    <ul>
+      <li><strong>Tildes y mayúsculas:</strong> «BOGOTA», «Bogotá» y «bogota d.c.» deberían referirse al mismo lugar. Una buena herramienta normaliza esto, pero en tu hoja conviene elegir una sola forma.</li>
+      <li><strong>Nombres oficiales y nombres de uso diario:</strong> «Cartagena» y «Cartagena de Indias», «San Andrés» y «Archipiélago de San Andrés, Providencia y Santa Catalina», «Valle» y «Valle del Cauca».</li>
+      <li><strong>Municipios con el mismo nombre:</strong> hay varios «San Juan», «La Unión» o «Villanueva» en distintos departamentos. Si trabajas por municipio, agrega una columna con el departamento para evitar confusiones.</li>
+      <li><strong>Espacios extra</strong> al inicio o al final del texto, que impiden la coincidencia aunque el nombre se vea igual. En Excel, la función <code>ESPACIOS()</code> los elimina.</li>
+    </ul>
+
+    <h2>3. Mejor aún: usa los códigos DANE</h2>
+    <p>El DANE asigna un código a cada departamento (2 dígitos) y a cada municipio (5 dígitos) en la codificación DIVIPOLA. Por ejemplo, 05 es Antioquia y 05001 es Medellín; 11001 es Bogotá, D. C. Si tu sistema contable o tu CRM guarda estos códigos, úsalos: no tienen problemas de tildes ni de nombres repetidos.</p>
+    <p>Un detalle práctico: Excel elimina los ceros a la izquierda si la columna es numérica, y 05001 se convierte en 5001. Formatea la columna como texto antes de pegar los códigos.</p>
+
+    <h2>4. Mapa de color o mapa de burbujas</h2>
+    <table>
+      <thead><tr><th>Tipo</th><th>Cómo se ve</th><th>Úsalo para</th></tr></thead>
+      <tbody>
+        <tr><td>Mapa de color (coropleta)</td><td>Cada departamento se pinta más oscuro cuanto mayor es el valor</td><td>Comparar regiones completas: ventas por departamento, cobertura, participación.</td></tr>
+        <tr><td>Mapa de burbujas</td><td>Un círculo sobre cada ciudad, de tamaño proporcional al valor</td><td>Datos por municipio, donde pintar el territorio completo exageraría ciudades pequeñas en áreas grandes.</td></tr>
+      </tbody>
+    </table>
+    <p>Un cuidado importante en los mapas de color: los departamentos grandes y poco poblados, como Amazonas o Vichada, llaman la atención por su tamaño aunque su valor sea bajo. Si comparas regiones de población muy distinta, considera usar una tasa (por ejemplo, ventas por cada 1.000 habitantes) en lugar del total.</p>
+
+    <h2>5. Cuenta lo que no quedó en el mapa</h2>
+    <p>Siempre habrá filas sin ubicación clara: «Varios», «Exportación», una ciudad mal escrita. No las borres en silencio. Un buen mapa indica cuántos registros o qué valor quedaron sin ubicar, para que nadie saque conclusiones con datos incompletos.</p>
+
+    <h2>6. Hazlo en DataLite</h2>
+    <ol>
+      <li>Sube tu Excel o CSV con una columna de departamento, ciudad o código DANE.</li>
+      <li>DataLite reconoce la columna y propone el visual «Mapa de Colombia»: coropleta para departamentos y burbujas para municipios.</li>
+      <li>Haz clic en una región para filtrar el resto del tablero.</li>
+      <li>Al pie del mapa verás cuántos valores no se pudieron ubicar.</li>
+    </ol>
+    <p>Los límites provienen del Marco Geoestadístico Nacional del DANE, y el archivo se analiza en tu navegador: tus datos no se suben para dibujar el mapa.</p>
+
+    <div class="cta-box">
+      <h2>Pinta tus datos en el mapa</h2>
+      <p>Sube una hoja con departamentos o ciudades y obtén el mapa en segundos, gratis.</p>
+      <a class="btn btn-primary" href="/#herramienta">Crear mapa</a>
+    </div>
+
+    <div class="ad-slot" data-slot="article"></div>
+
+    <p>Para resumir antes de mapear, lee <a href="/guias/tabla-dinamica-online">cómo hacer una tabla dinámica online</a>. Si el mapa va a ser parte de un tablero más completo, revisa <a href="/guias/dashboard-en-excel">cómo hacer un dashboard a partir de un Excel</a>.</p>
+  </article>
+</main>

@@ -99,7 +99,7 @@ const footer = `
   </div>
 </footer>`;
 
-function page({ title, description, path, body, schema = [], ogType = 'website', noindex = false, scripts = '' }) {
+function page({ title, description, path, body, schema = [], ogType = 'website', noindex = false, scripts = '', ads = false }) {
   const url = SITE + path;
   const ld = schema.map((s) => `<script type="application/ld+json">${JSON.stringify(s)}</script>`).join('\n');
   return `<!doctype html>
@@ -134,7 +134,7 @@ ${ld}
 <script defer src="/assets/js/consent.js?v=${V.consent}"></script>
 ${scripts}
 </head>
-<body>
+<body${ads ? ' data-ads="1"' : ''}>
 ${header}
 ${body}
 ${footer}
@@ -153,6 +153,7 @@ const guideCards = readdirSync(join(pagesDir, 'guias')).filter((f) => f.endsWith
 }).sort((a, b) => b.date.localeCompare(a.date) || a.slug.localeCompare(b.slug));
 const esc = (t) => t.replace(/&/g, '&amp;').replace(/</g, '&lt;');
 const guideListHtml = guideCards.map((g) => `<a class="guide-link" href="/guias/${g.slug}"><h3>${esc(g.h1)}</h3><p>${esc(g.description)}</p></a>`).join('\n      ');
+const guideHomeHtml = guideCards.slice(0, 6).map((g) => `<a class="guide-link" href="/guias/${g.slug}"><h3>${esc(g.h1)}</h3><p>${esc(g.description)}</p></a>`).join('\n          ');
 const sitemap = [];
 function walk(dir, rel = '') {
   for (const f of readdirSync(dir, { withFileTypes: true })) {
@@ -163,7 +164,7 @@ function walk(dir, rel = '') {
     if (!m) throw new Error(`Falta el encabezado JSON en ${rel}${f.name}`);
     const meta = JSON.parse(m[1]);
     let body = raw.slice(m[0].length).replace(/\{\{v:(\w+)\}\}/g, (_, k) => V[k] || '');
-    body = body.replace('<!--LISTA_GUIAS-->', guideListHtml);
+    body = body.replace('<!--LISTA_GUIAS-->', guideListHtml).replace('<!--GUIAS_INICIO-->', guideHomeHtml);
     const slug = f.name.replace(/\.html$/, '');
     const path = slug === 'index' ? `/${rel}` : `/${rel}${slug}`;
     const target = out(`${rel}${f.name}`);
@@ -184,7 +185,9 @@ function walk(dir, rel = '') {
         ],
       }];
     }
-    writeFileSync(target, page({ ...meta, path, body, ogType: meta.article ? 'article' : 'website', scripts }));
+    // Publicidad solo en páginas con contenido propio (inicio, guías y acerca de); nunca en pantallas de utilidad, legales o de error
+    const ads = !meta.noindex && (path === '/' || rel === 'guias/' || slug === 'acerca');
+    writeFileSync(target, page({ ...meta, path, body, ogType: meta.article ? 'article' : 'website', scripts, ads }));
     if (!meta.noindex) sitemap.push({ loc: SITE + path, lastmod: meta.article?.modified || meta.article?.published || meta.lastmod || '2026-10-20', priority: path === '/' ? '1.0' : meta.article ? '0.8' : '0.4' });
   }
 }
