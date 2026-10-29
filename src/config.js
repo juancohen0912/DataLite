@@ -11,9 +11,9 @@ export const CLOUD = {
 // Mientras estén vacíos, los botones de conexión no aparecen.
 export const CONNECT = {
   google: {
-    clientId: '',   // Google Cloud → Credenciales → ID de cliente OAuth (aplicación web)
-    apiKey: '',     // Clave de API restringida a data-lite.vercel.app y docs.google.com (para el selector)
-    appId: '',      // Número del proyecto de Google Cloud
+    clientId: '479717259837-dvgb2hvp6j94dj20sfrjglndoma8ek9u.apps.googleusercontent.com',   // Google Cloud → Credenciales → ID de cliente OAuth (aplicación web)
+    apiKey: 'AIzaSyAqTYltPA7c4NJ3pPOPmM5OzZDsDPIZ8VA',     // Clave de API restringida a data-lite.vercel.app y docs.google.com (para el selector)
+    appId: '479717259837',      // Número del proyecto de Google Cloud
   },
   microsoft: {
     clientId: '',   // Microsoft Entra → Registros de aplicaciones → ID de aplicación (cliente)
