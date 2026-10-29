@@ -533,3 +533,16 @@ body.modal-open { overflow: hidden; }
 .price-tier { margin: 0 0 10px; font-size: 14px; color: var(--muted); }
 .price-tier strong { color: var(--ink); }
 .nudge { display: flex; flex-wrap: wrap; align-items: center; gap: 4px; }
+.map-box { position: relative; }
+.map-missing { position: absolute; left: 8px; top: 4px; margin: 0; background: rgba(255,255,255,.85); padding: 2px 6px; border-radius: 6px; max-width: 70%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+/* ---------------- Plantillas ---------------- */
+.templates { margin-top: 18px; }
+.template-list { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+.template-chip { display: inline-flex; align-items: center; gap: 7px; background: var(--sheet); border: 1px solid var(--line); border-radius: 999px; padding: 8px 14px 8px 10px; font: 600 14px var(--font); color: var(--ink); cursor: pointer; }
+.template-chip:hover:not(:disabled) { border-color: var(--pivot); color: var(--pivot-ink); }
+.template-chip .emo { font-size: 17px; }
+.tpl-cols { list-style: none; padding: 0; margin: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 4px 16px; font-size: 14px; }
+.tpl-actions { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.tpl-map { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px 14px; }
+@media (max-width: 560px) { .tpl-cols, .tpl-map { grid-template-columns: 1fr; } }

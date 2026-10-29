@@ -1,4 +1,5 @@
 import React from 'react';
+import { findGeoColumn, detectGeo } from '../lib/geo-match.js';
 import { AGG_LABELS, autoGranularity } from '../lib/data.js';
 import { isMeasureRef, measureRef } from '../lib/model.js';
 import { VISUAL_TYPES, typeInfo, defaultAgg } from './visuals.js';
@@ -10,7 +11,7 @@ export function TypeGlyph({ type }) {
   const d = {
     bar: 'M3 13V8M7 13V4M11 13V9', hbar: 'M3 4h7M3 8h10M3 12h5', line: 'M2 12l4-5 3 3 5-7', area: 'M2 13l4-5 3 3 5-7v9z',
     pie: 'M8 2a6 6 0 1 0 6 6H8z', donut: 'M8 2a6 6 0 1 1-6 6', combo: 'M3 13V9M7 13V7M11 13V10M2 7l4-3 4 2 4-3',
-    treemap: 'M2 3h7v10H2zM9 3h5v6H9zM9 9h5v4H9z', scatter: 'M4 11h.01M7 6h.01M10 9h.01M12 4h.01M5 8h.01',
+    treemap: 'M2 3h7v10H2zM9 3h5v6H9zM9 9h5v4H9z', map: 'M6 2.5l-3.5 1.5v9.5L6 12l4 1.5 3.5-1.5V2.5L10 4zM6 2.5V12M10 4v9.5', scatter: 'M4 11h.01M7 6h.01M10 9h.01M12 4h.01M5 8h.01',
     kpi: 'M2.5 4h11v8h-11zM5 9.5h3M5 6.5h6', gauge: 'M2.5 11a5.5 5.5 0 0111 0M8 11l2.5-3.5', matrix: 'M2.5 3.5h11v9h-11zM2.5 6.5h11M2.5 9.5h11M6.5 3.5v9M10 3.5v9',
   }[type];
   const fill = ['area', 'pie', 'treemap'].includes(type);
@@ -71,8 +72,11 @@ export function VisualPanel({ model, cfg, onChange, onClose, onDuplicate, onRemo
     if ((t === 'kpi' || t === 'gauge') && cfg.size !== 'quarter' && cfg.size !== 'third') patch.size = t === 'kpi' ? 'quarter' : 'third';
     if (!ti.noGroup && (cfg.type === 'kpi' || cfg.type === 'gauge') && (cfg.size === 'quarter')) patch.size = 'half';
     if (t === 'matrix') patch.heat = cfg.heat !== false;
+    if (t === 'map') { const geo = findGeoColumn(model.columns, model.rows); if (geo) patch.group = geo.col; patch.topN = 'ALL'; }
     set(patch);
   }
+
+  const mapOk = cfg.type !== 'map' || !!detectGeo(model.rows.slice(0, 3000).map((r) => r[cfg.group]));
 
   return (
     <aside className="vpanel" aria-label="Configurar visual">
@@ -129,14 +133,15 @@ export function VisualPanel({ model, cfg, onChange, onClose, onDuplicate, onRemo
             </select>
           </Field>
         )}
-        {!info.noGroup && !groupIsDate && (
+        {cfg.type === 'map' && !mapOk && <p className="hint">Esta columna no parece tener departamentos ni municipios de Colombia. Elige en «Agrupar por» una columna con nombres como Antioquia, Valle o Medellín.</p>}
+        {!info.noGroup && !groupIsDate && cfg.type !== 'map' && (
           <Field label="Mostrar">
             <select value={cfg.topN} onChange={(e) => set({ topN: e.target.value })}>
               <option value="5">Top 5</option><option value="10">Top 10</option><option value="15">Top 15</option><option value="25">Top 25</option><option value="ALL">Todos</option>
             </select>
           </Field>
         )}
-        {!info.noGroup && (
+        {!info.noGroup && cfg.type !== 'map' && (
           <Field label="Ordenar">
             <select value={cfg.sort} onChange={(e) => set({ sort: e.target.value })}>
               <option value="auto">Automático</option><option value="value-desc">Mayor a menor</option><option value="value-asc">Menor a mayor</option><option value="label">Alfabético</option>{groupIsDate && <option value="chrono">Cronológico</option>}

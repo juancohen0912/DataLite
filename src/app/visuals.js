@@ -1,5 +1,6 @@
 // Configuración de visuales del tablero, sugerencias automáticas y cálculo de cada vista.
 import { pivot, stats, autoGranularity, AGG_LABELS, AGG_LABELS_ALL } from '../lib/data.js';
+import { findGeoColumn } from '../lib/geo-match.js';
 import { evalMeasure, finalize } from '../lib/formula.js';
 import { findMeasure, isMeasureRef } from '../lib/model.js';
 
@@ -21,12 +22,13 @@ export const VISUAL_TYPES = [
   { id: 'donut', label: 'Dona', group: 'Gráficos', noSplit: true },
   { id: 'treemap', label: 'Mapa de árbol', group: 'Gráficos', noSplit: true },
   { id: 'scatter', label: 'Dispersión', group: 'Gráficos', two: true, noSplit: true },
+  { id: 'map', label: 'Mapa de Colombia', group: 'Gráficos', noSplit: true },
   { id: 'kpi', label: 'Tarjeta', group: 'Indicadores', noGroup: true },
   { id: 'gauge', label: 'Medidor', group: 'Indicadores', noGroup: true },
   { id: 'matrix', label: 'Matriz', group: 'Tablas' },
 ];
 export const typeInfo = (t) => VISUAL_TYPES.find((v) => v.id === t) || VISUAL_TYPES[0];
-export const CHART_SVG = new Set(['bar', 'hbar', 'line', 'area', 'pie', 'donut', 'treemap', 'combo', 'scatter', 'gauge']);
+export const CHART_SVG = new Set(['bar', 'hbar', 'line', 'area', 'pie', 'donut', 'treemap', 'combo', 'scatter', 'gauge', 'map']);
 
 let seq = 0;
 export const newId = () => `v${Date.now().toString(36)}${(seq++).toString(36)}`;
@@ -72,7 +74,7 @@ export function computeView(model, rowsFor, allRows, cfg) {
 
   const rows = rowsFor(cfg.group);
   const split = info.noSplit ? -1 : cfg.split;
-  const p = pv(rows, model, { group: cfg.group, split, gran: cfg.gran, sort: cfg.sort, topN: cfg.type === 'matrix' ? (cfg.topN === 'ALL' ? 'ALL' : cfg.topN) : cfg.topN, topSeries: cfg.type === 'matrix' ? 12 : 6 }, cfg.metric, cfg.agg);
+  const p = pv(rows, model, { group: cfg.group, split, gran: cfg.gran, sort: cfg.sort, topN: cfg.type === 'map' ? 'ALL' : cfg.type === 'matrix' ? (cfg.topN === 'ALL' ? 'ALL' : cfg.topN) : cfg.topN, topSeries: cfg.type === 'matrix' ? 12 : 6 }, cfg.metric, cfg.agg);
   const out = { ...p, kind: cfg.type, title, label, valueLabel: label, groupName, metricName: label };
   if (info.two) {
     const label2 = metricLabel(model, cfg.metric2, cfg.agg2);
@@ -109,7 +111,10 @@ export function autoVisuals(model, sug) {
   }
   // Ranking y participación
   if (cats[0] !== undefined) out.push({ ...base, id: newId(), type: model.columns[cats[0]].unique > 8 ? 'hbar' : 'bar', group: cats[0] });
-  if (cats[1] !== undefined) out.push({ ...base, id: newId(), type: model.columns[cats[1]].unique <= 8 ? 'donut' : 'treemap', group: cats[1] });
+  // Mapa de Colombia si hay una columna de departamentos o municipios
+  const geo = findGeoColumn(model.columns, model.rows);
+  if (geo) out.push({ ...base, id: newId(), type: 'map', group: geo.col, topN: 'ALL', sort: 'value' });
+  if (cats[1] !== undefined && cats[1] !== geo?.col) out.push({ ...base, id: newId(), type: model.columns[cats[1]].unique <= 8 ? 'donut' : 'treemap', group: cats[1] });
   if (cats[0] !== undefined && cats[2] !== undefined && model.columns[cats[2]].unique <= 12) {
     out.push({ ...base, id: newId(), type: 'matrix', group: cats[0], split: cats[2], size: 'full', heat: true });
   } else if (cats[0] !== undefined && cats[1] !== undefined && model.columns[cats[1]].unique <= 12) {
