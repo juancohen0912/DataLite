@@ -358,6 +358,16 @@ export function EmpresaModal({ account, onClose, onChanged }) {
     </Field>
   );
   const price = <p className="price-line"><b>{cop(orgYearTotal(seats))}</b> <span className="muted">COP al año · {seats} × {cop(seatMonthPrice(seats))} por usuario al mes</span></p>;
+  // Incentivo: con 10 cupos el precio por usuario baja; de 7 a 9 usuarios se muestra cuánto cambia el total.
+  const toTen = seats >= 7 && seats <= 9 && (!org || org.seats < 10) ? orgYearTotal(10) - orgYearTotal(seats) : null;
+  const tenNudge = toTen === null ? null : (
+    <div className="callout-sm nudge">
+      {toTen < 0
+        ? <>Con <b>10 usuarios</b> pagas <b>{cop(-toTen)} menos al año</b> y te sobra {10 - seats === 1 ? 'un cupo' : `${10 - seats} cupos`}: cada usuario queda a {cop(14900)}.</>
+        : <>Por solo <b>{cop(toTen)} más al año</b> tienes <b>10 usuarios</b> a {cop(14900)} cada uno ({10 - seats} cupos más).</>}
+      {' '}<button type="button" className="btn btn-link btn-sm" onClick={() => { setSeats(10); track('empresa_sugerencia_10', { desde: seats }); }}>Cambiar a 10 usuarios</button>
+    </div>
+  );
 
   if (org === undefined) return <Modal title="DataLite Empresa" onClose={onClose}><p className="muted">Cargando…</p></Modal>;
 
@@ -374,6 +384,7 @@ export function EmpresaModal({ account, onClose, onChanged }) {
           <Field label="Nombre de la empresa"><input className="input" value={name} maxLength={120} onChange={(e) => setName(e.target.value)} placeholder="Mi Empresa SAS" /></Field>
           {seatPicker(5)}
           {price}
+          {tenNudge}
           <p className="muted small">De 5 a 9 usuarios: {cop(16900)} por usuario al mes. De 10 a 20: {cop(14900)}. Un solo pago por 12 meses con Wompi (tarjeta, PSE, Nequi o Bancolombia), sin renovación automática. ¿Más de 20 usuarios? Escríbenos a <a href="mailto:datalitecontact@gmail.com">datalitecontact@gmail.com</a>.</p>
           {error && <p className="error" role="alert">{error}</p>}
           <button type="submit" className="btn btn-primary" disabled={busy}>{busy ? 'Abriendo Wompi…' : `Pagar ${cop(orgYearTotal(seats))} con Wompi`}</button>
@@ -415,7 +426,7 @@ export function EmpresaModal({ account, onClose, onChanged }) {
             {seatPicker(Math.max(5, org.used))}
             {addingSeats
               ? <p className="muted small">Pagas solo los {seats - org.seats} cupos nuevos por los {daysLeft} días que faltan; Wompi te muestra el valor exacto.</p>
-              : <>{price}<p className="muted small">{org.active ? 'Los 12 meses nuevos se suman al final del periodo vigente.' : 'El nuevo periodo empieza hoy.'}</p></>}
+              : <>{price}{tenNudge}<p className="muted small">{org.active ? 'Los 12 meses nuevos se suman al final del periodo vigente.' : 'El nuevo periodo empieza hoy.'}</p></>}
             <button type="submit" className="btn btn-ghost" disabled={busy}>{busy ? 'Abriendo Wompi…' : 'Pagar con Wompi'}</button>
           </form>
         )}
