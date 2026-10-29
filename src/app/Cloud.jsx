@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { sendMagicLink, rpc, startCheckout, confirmPayment, CONSENT_VERSION, CloudError, seatMonthPrice, orgYearTotal } from '../lib/cloud.js';
+import { sendMagicLink, rpc, notifyInvite, startCheckout, confirmPayment, CONSENT_VERSION, CloudError, seatMonthPrice, orgYearTotal } from '../lib/cloud.js';
 import { Modal, Icon, Field, Menu, track } from './ui.jsx';
 
 const PRICE = '$19.900';
@@ -215,12 +215,28 @@ export function ShareModal({ project, account, onClose }) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
   const [copied, setCopied] = useState(false);
+  const [notice, setNotice] = useState('');
   const link = `${location.origin}/?p=${project.id}`;
   const load = () => rpc('dl_list_members', { p_id: project.id }).then((m) => setMembers(m || [])).catch((e) => setError(e.message));
   useEffect(() => { load(); }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const act = async (fn) => { setBusy(true); setError(''); try { await fn(); await load(); } catch (e) { setError(e.message); } finally { setBusy(false); } };
-  const invite = (e) => { e.preventDefault(); act(async () => { await rpc('dl_share', { p_id: project.id, p_email: email, p_role: role }); setEmail(''); track('compartir', { rol: role }); }); };
+  const act = async (fn) => { setBusy(true); setError(''); setNotice(''); try { await fn(); await load(); } catch (e) { setError(e.message); } finally { setBusy(false); } };
+  // Aviso por correo: si falla, la invitación igual queda hecha y se ofrece copiar el enlace.
+  const mail = async (to) => {
+    try {
+      const r = await notifyInvite(project.id, to);
+      setNotice(r.sent ? `Le enviamos un correo a ${to} con el enlace.` : `Ya le avisamos a ${to} hace poco; si no lo encuentra, que revise spam o envíale el enlace.`);
+      if (r.sent) track('invitacion_correo');
+    } catch (e) {
+      setNotice(e.kind === 'unavailable' ? `Invitación lista. Copia el enlace y envíaselo a ${to}.` : `${e.message}`);
+    }
+  };
+  const invite = (e) => {
+    e.preventDefault();
+    const to = email.trim().toLowerCase();
+    const isNew = !(members || []).some((m) => m.email === to);
+    act(async () => { await rpc('dl_share', { p_id: project.id, p_email: to, p_role: role }); setEmail(''); track('compartir', { rol: role }); if (isNew) await mail(to); });
+  };
   const requests = (members || []).filter((m) => m.edit_requested_at && m.role === 'viewer');
   const max = account.status?.limits?.max_members ?? 10;
 
@@ -234,6 +250,7 @@ export function ShareModal({ project, account, onClose }) {
           <button type="submit" className="btn btn-primary btn-sm" disabled={busy || !email.trim()}>Invitar</button>
         </form>
         {error && <p className="error" role="alert">{error}</p>}
+        {notice && <p className="callout-sm" role="status">{notice}</p>}
         {requests.length > 0 && (
           <div className="requests">
             <h3 className="proj-h">Solicitudes para editar</h3>
@@ -259,6 +276,7 @@ export function ShareModal({ project, account, onClose }) {
                   <select value={m.role} disabled={busy} aria-label={`Permiso de ${m.email}`} onChange={(e) => act(() => rpc('dl_share', { p_id: project.id, p_email: m.email, p_role: e.target.value }))}>
                     <option value="viewer">Puede ver</option><option value="editor">Puede editar</option>
                   </select>
+                  <button type="button" className="btn btn-link btn-sm" disabled={busy} title="Enviarle un correo con el enlace" onClick={() => { setBusy(true); setError(''); setNotice(''); mail(m.email).finally(() => setBusy(false)); }}>Avisar</button>
                   <button type="button" className="icon-btn" aria-label={`Quitar a ${m.email}`} disabled={busy} onClick={() => act(() => rpc('dl_unshare', { p_id: project.id, p_email: m.email }))}><Icon name="close" /></button>
                 </span>
               </li>
@@ -269,7 +287,7 @@ export function ShareModal({ project, account, onClose }) {
           <input className="input" readOnly value={link} aria-label="Enlace del proyecto" onFocus={(e) => e.target.select()} />
           <button type="button" className="btn btn-ghost btn-sm" onClick={async () => { try { await navigator.clipboard.writeText(link); setCopied(true); setTimeout(() => setCopied(false), 2000); } catch { /* sin portapapeles */ } }}>{copied ? 'Copiado' : 'Copiar enlace'}</button>
         </div>
-        <p className="muted small">El enlace solo funciona para las personas de la lista, después de iniciar sesión con su correo. Envíaselo tú por WhatsApp o correo.</p>
+        <p className="muted small">El enlace solo funciona para las personas de la lista, después de iniciar sesión con su correo. Al invitar le enviamos un correo con el enlace; también puedes mandárselo por WhatsApp.</p>
       </div>
     </Modal>
   );
