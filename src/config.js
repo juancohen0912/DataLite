@@ -16,6 +16,6 @@ export const CONNECT = {
     appId: '479717259837',      // Número del proyecto de Google Cloud
   },
   microsoft: {
-    clientId: '',   // Microsoft Entra → Registros de aplicaciones → ID de aplicación (cliente)
+    clientId: '66a80d69-c597-430b-853c-4961a6ac0cb2',   // Microsoft Entra → Registros de aplicaciones → ID de aplicación (cliente)
   },
 };
