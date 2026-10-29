@@ -25,7 +25,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:wght@400;500;600;700;800&display=swap">
-<link rel="stylesheet" href="/assets/styles.css?v=99459da1d6">
+<link rel="stylesheet" href="/assets/styles.css?v=9f52968b11">
 
 <script defer src="/assets/js/consent.js?v=cd773d55e5"></script>
 
@@ -75,6 +75,17 @@
     <p>Los correos de acceso y de invitación se envían desde una cuenta de Gmail de DataLite, por lo que Google procesa la dirección de destino y el contenido de esos mensajes. Estos datos se almacenan en Supabase (servidores de Amazon Web Services en Estados Unidos, región us-east-1), cifrados en tránsito y en reposo. El acceso a cada proyecto está restringido en la base de datos: solo lo pueden abrir su dueño y las personas que él invitó, y solo editan quienes el dueño autorizó. Nadie más, incluido el público, puede listar ni descargar proyectos.</p>
     <p>No usamos el contenido de tus proyectos para publicidad, perfiles ni entrenamiento de modelos, y no lo vendemos ni lo cedemos a terceros. Solo lo consultaríamos si tú lo pides para resolver un problema técnico o si una autoridad competente lo exige.</p>
 
+    <h2>Conexión con Google Sheets y Excel en línea (Pro y Empresa)</h2>
+    <p>Si conectas una hoja de Google Sheets o un libro de Excel guardado en OneDrive o SharePoint, la autorización ocurre en la ventana oficial de Google o de Microsoft y tú eliges el archivo:</p>
+    <ul>
+      <li><strong>Google:</strong> pedimos solo el permiso <em>drive.file</em>, que da acceso únicamente a los archivos que eliges en el selector de Google. No podemos ver el resto de tu Google Drive.</li>
+      <li><strong>Microsoft:</strong> pedimos permiso de solo lectura de archivos (<em>Files.Read.All</em>) para buscar y abrir el libro que eliges. Nunca modificamos tus archivos.</li>
+      <li>El archivo se descarga directo de Google o Microsoft a tu navegador, igual que si lo subieras desde tu equipo. Los permisos de acceso (tokens) quedan solo en la memoria de esa pestaña y desaparecen al cerrarla: no los guardamos en nuestros servidores.</li>
+      <li>Si guardas el proyecto, guardamos el nombre y el identificador del archivo conectado para que puedas actualizarlo, junto con una copia de los datos como cualquier proyecto guardado.</li>
+      <li>Puedes retirar el acceso cuando quieras desde la configuración de tu cuenta de Google (myaccount.google.com/permissions) o de Microsoft (account.live.com/consent/Manage para cuentas personales, myapps.microsoft.com para cuentas de trabajo).</li>
+    </ul>
+    <p>El uso y la transferencia a cualquier otra aplicación de la información recibida de las API de Google por parte de DataLite se ajustará a la <a href="https://developers.google.com/terms/api-services-user-data-policy" rel="noopener" target="_blank">Política de datos del usuario de los servicios de API de Google</a>, incluidos los requisitos de uso limitado. No usamos esos datos para publicidad, no los vendemos y no los usamos para entrenar modelos de inteligencia artificial.</p>
+
     <h2>Pagos</h2>
     <p>Los pagos de DataLite Pro los procesa Wompi (Bancolombia S.A.), en su propia página segura. Allí ingresas tus datos de pago directamente, bajo la política de privacidad de Wompi; DataLite solo recibe la confirmación de la transacción (referencia, estado y monto) para activar tu plan. La información de facturación se conserva el tiempo que exige la ley tributaria colombiana.</p>
     <p>El código que lee los archivos se sirve desde el propio dominio de DataLite; la herramienta no descarga código de otros servidores para procesar tus datos.</p>
@@ -99,7 +110,7 @@
     </ul>
 
     <h2>Transferencias internacionales</h2>
-    <p>Vercel, Supabase y Google pueden procesar datos en servidores ubicados fuera de Colombia, principalmente en Estados Unidos. Estos proveedores declaran aplicar garantías contractuales para estas transferencias. Al iniciar sesión autorizas expresamente la transferencia de tu cuenta y de tus proyectos a Supabase con este fin. Wompi procesa los pagos en Colombia.</p>
+    <p>Vercel, Supabase, Google y Microsoft pueden procesar datos en servidores ubicados fuera de Colombia, principalmente en Estados Unidos. Estos proveedores declaran aplicar garantías contractuales para estas transferencias. Al iniciar sesión autorizas expresamente la transferencia de tu cuenta y de tus proyectos a Supabase con este fin. Wompi procesa los pagos en Colombia.</p>
 
     <h2>Conservación</h2>
     <p>Tu preferencia de cookies se guarda en el almacenamiento local de tu navegador hasta que la borres o la cambies. Los datos agregados de analítica se conservan según los plazos de Vercel. Si no guardas proyectos, no conservamos ningún dato de tus archivos porque nunca los recibimos.</p>

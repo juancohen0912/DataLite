@@ -24,6 +24,10 @@ await build({
   entryPoints: [out('src/consent.js')], bundle: true, format: 'iife', minify: true, target: ['es2018'],
   outfile: out('assets/js/consent.js'), logLevel: 'warning',
 });
+await build({
+  entryPoints: [out('src/ms-callback.js')], bundle: true, format: 'iife', minify: true, target: ['es2018'],
+  outfile: out('assets/js/ms-callback.js'), logLevel: 'warning',
+});
 await build({ entryPoints: [out('src/styles.css')], bundle: true, minify: true, outfile: out('assets/styles.css'), logLevel: 'warning' });
 
 const hash = (f) => createHash('sha256').update(readFileSync(out(f))).digest('hex').slice(0, 10);

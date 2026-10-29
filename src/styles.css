@@ -520,3 +520,13 @@ body.modal-open { overflow: hidden; }
 .pay-result .sheet-actions { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; }
 .share-link .input { flex: 1; min-width: 0; font-size: 13px; }
 .plan-note { font-size: 13px; color: var(--muted); margin: 10px 0 0; }
+
+/* ---------------- Conexión a hojas en línea ---------------- */
+.connect { margin: 18px 0 4px; display: flex; flex-direction: column; gap: 8px; }
+.connect > span { font-size: 14px; color: var(--muted); display: flex; align-items: center; gap: 8px; }
+.connect-list { display: flex; flex-wrap: wrap; gap: 8px; }
+.connect-list .btn { font-size: 14px; padding: 9px 14px; }
+.pro-tag { background: var(--marker); color: var(--ink); font: 800 11px/1 var(--font); padding: 4px 7px; border-radius: 999px; letter-spacing: .02em; }
+.ms-search { grid-template-columns: 1fr auto; }
+.ms-files { max-height: 50vh; overflow-y: auto; }
+.ms-files .proj-name { display: flex; align-items: center; gap: 8px; }

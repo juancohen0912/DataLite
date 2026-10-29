@@ -26,6 +26,7 @@ const PATHS = {
   right: 'M6 3l5 5-5 5',
   filter: 'M2.5 3.5h11l-4.3 5v4l-2.4 1v-5z',
   calendar: 'M3 4h10v9.5H3zM3 7h10M6 2.5v3M10 2.5v3',
+  refresh: 'M13 3.5v3h-3M3 12.5v-3h3M12.6 6.5A5 5 0 004 5.2M3.4 9.5A5 5 0 0012 10.8',
 };
 export function Icon({ name, size = 16 }) {
   return <svg viewBox="0 0 16 16" width={size} height={size} aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d={PATHS[name]} /></svg>;

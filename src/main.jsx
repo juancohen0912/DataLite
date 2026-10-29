@@ -5,11 +5,13 @@ import { SAMPLES, makeSample } from './lib/samples.js';
 import { Dashboard } from './app/Dashboard.jsx';
 import { track, useToast } from './app/ui.jsx';
 import { AccountSlot, LoginModal, ConsentModal, ProModal, NameModal, ProjectsModal, ShareModal, PaymentResult, EmpresaModal } from './app/Cloud.jsx';
+import { ConnectButtons, MicrosoftFilesModal } from './app/Connect.jsx';
+import { pickGoogleSheet, fetchSource, sourceLabel } from './lib/connectors.js';
 import { cloudEnabled, currentSession, handleAuthCallback, rpc, signOut, packTable, uploadData, downloadData, deleteData, CloudError } from './lib/cloud.js';
 
 // ---------------------------------------------------------------- Carga
 
-function Dropzone({ onFile, onSample, busy, error }) {
+function Dropzone({ onFile, onSample, onConnect, locked, busy, error }) {
   const [over, setOver] = useState(false);
   const input = useRef(null);
   const cols = ['A', 'B', 'C', 'D', 'E', 'F'];
@@ -39,6 +41,7 @@ function Dropzone({ onFile, onSample, busy, error }) {
           <input ref={input} type="file" hidden accept=".xlsx,.xlsm,.xls,.ods,.csv,.tsv,.txt"
             onChange={(e) => { const f = e.target.files?.[0]; if (f) onFile(f); e.target.value = ''; }} />
         </div>
+        {onConnect && <ConnectButtons onConnect={onConnect} locked={locked} busy={busy} />}
         <div className="samples">
           <span>¿Sin archivo a la mano? Prueba con un ejemplo:</span>
           <div className="sample-list">
@@ -157,12 +160,56 @@ function App() {
     return true;
   }
 
-  function load(fileName, sheets, sheetIdx = 0) {
+  function load(fileName, sheets, sheetIdx = 0, source = null) {
     const t = buildTable(sheets[sheetIdx].aoa);
     if (!t.rows.length || !t.columns.length) throw new Error('No encontramos filas con datos. Revisa que la primera fila tenga los encabezados.');
     setProject(null); setInitial(null);
     if (new URLSearchParams(location.search).get('p')) history.replaceState(null, '', '/');
-    setDs({ fileName, sheets, sheetIdx, ...t, key: `${fileName}-${sheetIdx}-${Date.now()}` });
+    setDs({ fileName, sheets, sheetIdx, ...t, source, key: `${fileName}-${sheetIdx}-${Date.now()}` });
+  }
+
+  // ---------- Hojas en línea (Google Sheets y Excel en OneDrive/SharePoint), solo Pro y Empresa
+  const stateRef = useRef(null);
+  const biggest = (sheets) => sheets.reduce((best, s, i) => (s.aoa.length > sheets[best].aoa.length ? i : best), 0);
+  async function onConnect(type) {
+    setError('');
+    if (!(await gate('pro', 'Conectar hojas de Google Sheets y Excel en línea es parte de DataLite Pro y Empresa.'))) return;
+    if (type === 'microsoft') { setModal({ type: 'msfiles' }); return; }
+    try {
+      const src = await pickGoogleSheet();
+      if (src) await loadSource(src);
+    } catch (e) { setError(e.message); }
+  }
+  async function loadSource(src) {
+    setBusy(true); setError(''); setModal(null);
+    try {
+      const file = await fetchSource(src);
+      const { sheets } = await readFile(file);
+      load(src.name.replace(/\.(xlsx|xlsm|csv)$/i, ''), sheets, biggest(sheets), src);
+      track('hoja_conectada', { tipo: src.type });
+    } catch (e) { setError(e.message || 'No pudimos leer la hoja.'); } finally { setBusy(false); }
+  }
+  // Vuelve a leer la hoja conectada y conserva visuales, fórmulas, filtros y el proyecto abierto.
+  async function onRefresh() {
+    const src = ds?.source;
+    if (!src) return;
+    if (!(await gate('pro', 'Actualizar datos desde Google Sheets o Excel en línea es parte de DataLite Pro y Empresa.'))) return;
+    setBusy(true);
+    try {
+      const file = await fetchSource(src);
+      const { sheets } = await readFile(file);
+      const want = ds.sheets?.[ds.sheetIdx]?.name || src.sheet;
+      let idx = sheets.findIndex((s) => s.name === want);
+      if (idx < 0) idx = biggest(sheets);
+      const t = buildTable(sheets[idx].aoa);
+      if (!t.rows.length || !t.columns.length) throw new Error('La hoja ya no tiene filas con datos.');
+      setInitial(stateRef.current ? stateRef.current() : initial);
+      setDs({ fileName: ds.fileName, sheets, sheetIdx: idx, ...t, source: src, key: `${src.id}-${idx}-${Date.now()}` });
+      track('hoja_actualizada', { tipo: src.type });
+      showToast(`Datos actualizados desde ${sourceLabel(src)}: ${t.rows.length.toLocaleString('es-CO')} filas.${project && project.role !== 'viewer' ? ' Guarda para que tus invitados vean lo nuevo.' : ''}`);
+    } catch (e) {
+      showToast(e.message || 'No pudimos actualizar los datos.', 'error');
+    } finally { setBusy(false); }
   }
 
   async function onFile(file) {
@@ -198,7 +245,7 @@ function App() {
       const key = `p-${id}-${meta.version}-${Date.now()}`;
       setInitial(meta.state || null);
       setProject({ ...meta, dataKey: key });
-      setDs({ fileName: data.fileName || meta.name, sheets: null, sheetIdx: 0, columns, rows: data.rows, truncated: data.truncated, key });
+      setDs({ fileName: data.fileName || meta.name, sheets: null, sheetIdx: 0, columns, rows: data.rows, truncated: data.truncated, source: meta.state?.source || null, key });
       history.replaceState(null, '', `/?p=${id}`);
       track('proyecto_abierto', { rol: meta.role });
     } catch (e) {
@@ -324,6 +371,7 @@ function App() {
     editRequested: !!project?.edit_requested,
     signedIn: !!account.session, exports: account.status?.exports || null, trialAvailable: account.status?.trial?.available ?? !account.session,
     onSave, onShare, onOpenProjects: openProjects, onRequestEdit, onExport, onPro: () => openPro.current(),
+    registerGetState: (fn) => { stateRef.current = fn; },
   } : null;
   if (cloud && project && !project.can_edit && project.role !== 'viewer') cloud.role = 'viewer';
 
@@ -332,8 +380,8 @@ function App() {
       {isPago
         ? <PaymentResult onLogin={() => setModal({ type: 'login', reason: 'Inicia sesión con el correo de tu cuenta para confirmar el pago.' })} onDone={refreshAccount} />
         : ds
-          ? <Dashboard key={ds.key} ds={ds} initial={initial} cloud={cloud} onReset={() => { setDs(null); setProject(null); setInitial(null); history.replaceState(null, '', '/'); }} onSheet={(i) => { try { load(ds.fileName, ds.sheets, i); } catch (e) { alert(e.message); } }} />
-          : <Dropzone onFile={onFile} onSample={onSample} busy={busy} error={error} />}
+          ? <Dashboard key={ds.key} ds={ds} initial={initial} cloud={cloud} onRefresh={cloudOn ? onRefresh : null} onReset={() => { setDs(null); setProject(null); setInitial(null); history.replaceState(null, '', '/'); }} onSheet={(i) => { try { load(ds.fileName, ds.sheets, i, ds.source); } catch (e) { alert(e.message); } }} />
+          : <Dropzone onFile={onFile} onSample={onSample} onConnect={cloudOn ? onConnect : null} locked={!account.status?.pro} busy={busy} error={error} />}
 
       {cloudOn && <AccountSlot account={account} onLogin={() => setModal({ type: 'login' })} onOpenProjects={openProjects} onEmpresa={() => openEmpresa.current()} onPro={async () => { if (await gate('account', 'Inicia sesión para activar DataLite Pro.')) setModal({ type: 'pro' }); }} onSignOut={async () => { await signOut(); setAccount({ session: null, status: null }); showToast('Cerraste sesión.'); }} />}
       {modal?.type === 'login' && <LoginModal reason={modal.reason} onClose={() => setModal(null)} />}
@@ -342,6 +390,7 @@ function App() {
       {modal?.type === 'empresa' && <EmpresaModal account={account} onChanged={refreshAccount} onClose={() => setModal(null)} />}
       {modal?.type === 'name' && <NameModal title={modal.title} initial={modal.initial} orgName={modal.orgName} onSubmit={modal.submit} onClose={() => { modal.cancel?.(); setModal(null); }} />}
       {modal?.type === 'projects' && <ProjectsModal currentId={project?.id} onOpen={openProject} onDelete={onDeleteProject} onClose={() => setModal(null)} />}
+      {modal?.type === 'msfiles' && <MicrosoftFilesModal onPick={(f) => loadSource(f)} onClose={() => setModal(null)} />}
       {modal?.type === 'share' && <ShareModal project={modal.project} account={account} onClose={() => { setModal(null); refreshAccount(); }} />}
       {toast}
     </div>
