@@ -172,6 +172,16 @@ export const orgYearTotal = (seats) => seats * seatMonthPrice(seats) * 12;
 // ------------------------------------------------------------------ Pagos (funciones del propio sitio)
 
 /** plan: 'pro' | 'empresa' (con seats y orgName para una empresa nueva) */
+/** Pide al servidor que avise por correo a una persona invitada. Devuelve {sent, reason} o lanza CloudError. */
+export async function notifyInvite(projectId, email) {
+  const token = await accessToken();
+  if (!token) throw new CloudError('Inicia sesión para continuar.', 'login', 401);
+  const res = await fetch('/api/compartir/notificar', { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }, body: JSON.stringify({ projectId, email }) });
+  const data = await res.json().catch(() => ({}));
+  if (res.ok) return data;
+  throw new CloudError(data.error || 'No pudimos enviar el correo.', res.status === 503 ? 'unavailable' : res.status === 429 ? 'limit' : 'error', res.status);
+}
+
 export async function startCheckout(plan = 'pro', { seats, orgName } = {}) {
   const token = await accessToken();
   if (!token) throw new CloudError('Inicia sesión para continuar.', 'login', 401);
