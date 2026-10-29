@@ -26,7 +26,7 @@ export default {
       console.info('conexion_ok', st.p);
       return back('ok', st.p);
     } catch (e) {
-      console.error('conexion_error', st.p, e.code || e.message);
+      console.error('conexion_error', st.p, e.code || '', (/AADSTS\d+/.exec(e.message || '') || [''])[0]);
       return back(e.code === 'no_refresh' ? 'sinpermiso' : 'error', st.p);
     }
   },
