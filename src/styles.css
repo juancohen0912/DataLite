@@ -532,3 +532,4 @@ body.modal-open { overflow: hidden; }
 .ms-files .proj-name { display: flex; align-items: center; gap: 8px; }
 .price-tier { margin: 0 0 10px; font-size: 14px; color: var(--muted); }
 .price-tier strong { color: var(--ink); }
+.nudge { display: flex; flex-wrap: wrap; align-items: center; gap: 4px; }
