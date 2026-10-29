@@ -128,6 +128,7 @@ export function ProModal({ reason, account, onClose, onTrial }) {
           <li>Guarda hasta {account.status?.limits?.max_projects ?? 50} tableros en la nube, con sus datos y fórmulas</li>
           <li>Compártelos con hasta {account.status?.limits?.max_members ?? 10} personas por proyecto: ver es gratis para ellas</li>
           <li>Tú decides quién puede editar; los demás pueden pedirte permiso</li>
+          <li>Conecta hojas de Google Sheets y actualiza tus tableros con un clic</li>
           <li>Descargas ilimitadas, sin marca de agua y sin publicidad</li>
         </ul>
         {pro && <p>Tu plan está activo hasta el <b>{fmtDate(account.status.plan?.period_end)}</b>. Si pagas otra vez, se suman 30 días al final.</p>}
