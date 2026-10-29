@@ -187,14 +187,28 @@ export async function listMicrosoftWorkbooks(query = '') {
     .filter((f) => /\.(xlsx|xlsm|csv)$/i.test(f.name) && ID_RE.test(f.id) && (!f.driveId || ID_RE.test(f.driveId)));
 }
 
+// Dominios donde Microsoft sirve las descargas (OneDrive personal usa microsoftpersonalcontent.com desde 2024).
+const MS_DL_HOSTS = ['sharepoint.com', '1drv.com', 'livefilestore.com', 'onedrive.com', 'microsoftpersonalcontent.com'];
+const msDownloadHostOk = (url) => {
+  try { const u = new URL(url); return u.protocol === 'https:' && MS_DL_HOSTS.some((d) => u.hostname === d || u.hostname.endsWith('.' + d)); } catch { return false; }
+};
+
 async function downloadMicrosoft(src) {
   const base = src.driveId ? `/drives/${encodeURIComponent(src.driveId)}/items/${encodeURIComponent(src.id)}` : `/me/drive/items/${encodeURIComponent(src.id)}`;
-  const meta = await graph(`${base}?$select=id,name,size,@microsoft.graph.downloadUrl`, false).catch(async (e) => { if (e.kind === 'auth') return graph(`${base}?$select=id,name,size,@microsoft.graph.downloadUrl`, true); throw e; });
+  const metaPath = `${base}?$select=id,name,size,@microsoft.graph.downloadUrl`;
+  const meta = await graph(metaPath, false).catch(async (e) => { if (e.kind === 'auth') return graph(metaPath, true); throw e; });
   if (meta.size > MAX_BYTES) throw new ConnectError('El archivo pesa más de 30 MB, el máximo que DataLite puede leer.', 'limit');
   const url = meta['@microsoft.graph.downloadUrl'];
-  if (typeof url !== 'string' || !/^https:\/\/[^/]+\.(sharepoint\.com|1drv\.com|livefilestore\.com|onedrive\.com)\//i.test(url)) throw new ConnectError('Microsoft no entregó un enlace de descarga válido.');
-  const res = await fetch(url, { cache: 'no-store', credentials: 'omit' });
-  if (!res.ok) throw new ConnectError('No pudimos descargar el archivo desde Microsoft.');
+  let res;
+  if (typeof url === 'string' && msDownloadHostOk(url)) {
+    // Enlace temporal ya autorizado: se descarga sin enviar el token.
+    res = await fetch(url, { cache: 'no-store', credentials: 'omit' });
+  } else {
+    // Plan B: Graph redirige al mismo tipo de enlace temporal.
+    const token = await msToken(false);
+    res = await fetch(`${GRAPH}${base}/content`, { headers: { Authorization: `Bearer ${token}` }, cache: 'no-store', credentials: 'omit' });
+  }
+  if (!res.ok) throw new ConnectError('No pudimos descargar el archivo desde Microsoft. Intenta de nuevo.');
   return new File([await readLimited(res)], safeName(meta.name || src.name));
 }
 
