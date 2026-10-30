@@ -244,3 +244,6 @@ export async function connectPermanent(provider) {
 
 /** «Enviar ahora»: prueba un reporte o alerta guardado. */
 export const testSchedule = (id) => apiPost('/api/reportes/probar', { id }, 'No pudimos enviar la prueba.');
+
+/** Administración: avisa por correo a la persona sobre su prueba (asignar, prorrogar, recortar, terminar). */
+export const notifyTrial = (id, action) => apiPost('/api/admin/notificar-prueba', { id, action }, 'No pudimos enviar el aviso.');

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { sendMagicLink, rpc, notifyInvite, startCheckout, confirmPayment, CONSENT_VERSION, CloudError, seatMonthPrice, orgYearTotal } from '../lib/cloud.js';
+import { sendMagicLink, rpc, notifyInvite, notifyTrial, startCheckout, confirmPayment, CONSENT_VERSION, CloudError, seatMonthPrice, orgYearTotal } from '../lib/cloud.js';
 import { Modal, Icon, Field, Menu, track } from './ui.jsx';
 
 const PRICE = '$19.900';
@@ -447,9 +447,16 @@ export function AdminTrialsModal({ onClose }) {
   const [error, setError] = useState('');
   const [notice, setNotice] = useState('');
   const [custom, setCustom] = useState({});
+  const [mail, setMail] = useState(true);
   const load = () => rpc('dl_admin_list_grants').then((l) => setList(l || [])).catch((e) => setError(e.message));
   useEffect(() => { load(); }, []);
-  const act = async (fn, msg) => { setBusy(true); setError(''); setNotice(''); try { await fn(); await load(); if (msg) setNotice(msg); } catch (e) { setError(e.message); } finally { setBusy(false); } };
+  // Aviso por correo (no bloquea: si falla, la acción ya quedó hecha)
+  const tell = async (id, action) => {
+    if (!mail || !id) return '';
+    try { const r = await notifyTrial(id, action); return r.sent ? ' Le avisamos por correo.' : ' No enviamos correo porque hubo otro aviso hace menos de un minuto.'; }
+    catch (e) { return ` La acción quedó hecha, pero el correo no salió: ${e.message}`; }
+  };
+  const act = async (fn, msg) => { setBusy(true); setError(''); setNotice(''); try { const extra = (await fn()) || ''; await load(); if (msg) setNotice(msg + extra); } catch (e) { setError(e.message); } finally { setBusy(false); } };
   const set = (k, v) => setF((x) => ({ ...x, [k]: v }));
   const grant = (e) => {
     e.preventDefault();
@@ -458,11 +465,11 @@ export function AdminTrialsModal({ onClose }) {
       const r = await rpc('dl_admin_grant', { p_email: email, p_kind: f.kind, p_days: Number(f.days), p_seats: Number(f.seats), p_org_name: f.kind === 'empresa' ? f.org.trim() : null, p_note: f.note.trim() || null });
       setF((x) => ({ ...x, email: '', org: '', note: '' }));
       track('admin_prueba_asignada', { tipo: f.kind });
-      return r;
+      return tell(r?.id, 'asignar');
     }, `Prueba de ${f.kind === 'pro' ? 'Pro' : 'Empresa'} asignada a ${email} por ${f.days} días. La persona la verá al recargar DataLite.`);
   };
-  const adjust = (g, days) => act(() => rpc('dl_admin_adjust_grant', { p_id: g.id, p_days: days }), days > 0 ? `Prorrogada ${days} días.` : `Recortada ${-days} días.`);
-  const end = (g) => { if (confirm(`¿Terminar ya la prueba de ${g.email}?`)) act(() => rpc('dl_admin_end_grant', { p_id: g.id }), 'Prueba terminada.'); };
+  const adjust = (g, days) => act(async () => { await rpc('dl_admin_adjust_grant', { p_id: g.id, p_days: days }); return tell(g.id, days > 0 ? 'prorrogar' : 'recortar'); }, days > 0 ? `Prorrogada ${days} días.` : `Recortada ${-days} días.`);
+  const end = (g) => { if (confirm(`¿Terminar ya la prueba de ${g.email}?`)) act(async () => { await rpc('dl_admin_end_grant', { p_id: g.id }); return tell(g.id, 'terminar'); }, 'Prueba terminada.'); };
 
   return (
     <Modal title="Pruebas gratis asignadas" onClose={onClose} wide>
@@ -481,6 +488,7 @@ export function AdminTrialsModal({ onClose }) {
             </div>
           )}
           <Field label="Nota interna (opcional)"><input className="input" maxLength={300} value={f.note} onChange={(e) => set('note', e.target.value)} placeholder="Ej.: demo para gerencia, referido por…" /></Field>
+          <label className="check"><input type="checkbox" checked={mail} onChange={(e) => setMail(e.target.checked)} /> Avisar por correo a la persona (al asignar, prorrogar, recortar o terminar)</label>
           <div><button type="submit" className="btn btn-primary" disabled={busy}>{busy ? 'Guardando…' : 'Asignar prueba'}</button></div>
         </form>
         {error && <p className="error" role="alert">{error}</p>}
