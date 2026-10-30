@@ -19,7 +19,7 @@ const ago = (iso) => {
 /** «Plan gratis · 1 de 3 descargas este mes» */
 const planHint = (status) => (status?.exports ? `Plan gratis · ${status.exports.used} de ${status.exports.limit} descargas este mes` : 'Plan gratis');
 
-export function AccountSlot({ account, onLogin, onOpenProjects, onPro, onEmpresa, onSignOut }) {
+export function AccountSlot({ account, onLogin, onOpenProjects, onPro, onEmpresa, onSignOut, onAdmin }) {
   const [el, setEl] = useState(null);
   useEffect(() => { setEl(document.getElementById('account-slot')); }, []);
   if (!el) return null;
@@ -28,11 +28,12 @@ export function AccountSlot({ account, onLogin, onOpenProjects, onPro, onEmpresa
   ) : (
     <Menu label={<span className="nav-user"><span className="avatar" aria-hidden="true">{(account.status?.email || account.session.email || '?')[0].toUpperCase()}</span><span className="nav-user-txt">{account.status?.pro ? 'Pro' : 'Mi cuenta'}</span>{account.status?.pending_requests > 0 && <span className="count" title="Solicitudes de edición">{account.status.pending_requests}</span>}</span>}
       buttonClass="nav-login" items={[
-        { label: account.status?.email || account.session.email, hint: account.status?.org?.active ? `DataLite Empresa · ${account.status.org.name}` : account.status?.trial?.active ? `Prueba de Pro hasta el ${fmtDate(account.status.plan?.period_end)}` : account.status?.pro ? `DataLite Pro hasta el ${fmtDate(account.status.plan?.period_end)}` : planHint(account.status), onClick: () => {}, disabled: true },
+        { label: account.status?.email || account.session.email, hint: account.status?.org?.active ? `DataLite Empresa · ${account.status.org.name}${account.status?.grant?.kind === 'empresa' ? ` (prueba hasta el ${fmtDate(account.status.grant.ends_at)})` : ''}` : account.status?.grant?.kind === 'pro' && !account.status?.plan ? `Prueba de Pro hasta el ${fmtDate(account.status.grant.ends_at)}` : account.status?.trial?.active ? `Prueba de Pro hasta el ${fmtDate(account.status.plan?.period_end)}` : account.status?.pro ? `DataLite Pro hasta el ${fmtDate(account.status.plan?.period_end)}` : planHint(account.status), onClick: () => {}, disabled: true },
         { label: 'Mis proyectos', onClick: onOpenProjects },
         { label: account.status?.org ? `Mi empresa: ${account.status.org.name}` : 'Plan Empresa para equipos', onClick: onEmpresa },
         !account.status?.pro && { label: account.status?.trial?.available ? `Probar Pro gratis ${account.status.trial.days} días` : `Obtener Pro (${PRICE} al mes)`, onClick: onPro },
         account.status?.pro && !account.status?.org?.active && { label: 'Renovar o extender 30 días', onClick: onPro },
+        account.status?.admin && onAdmin && { label: 'Administración: pruebas gratis', onClick: onAdmin },
         { label: 'Cerrar sesión', onClick: onSignOut },
       ]} />
   );
@@ -431,6 +432,85 @@ export function EmpresaModal({ account, onClose, onChanged }) {
           </form>
         )}
         {!admin && <button type="button" className="btn btn-ghost btn-sm" disabled={busy} onClick={() => { if (confirm(`¿Salir de ${org.name}? Perderás el acceso a sus tableros.`)) act(() => rpc('dl_org_remove', { p_email: account.status?.email })); }}>Salir de la empresa</button>}
+      </div>
+    </Modal>
+  );
+}
+
+// ------------------------------------------------------------------ Administración (solo la cuenta administradora)
+
+const STATE = (g) => (g.paid ? 'Ya pagó' : g.active ? 'Vigente' : 'Terminada');
+export function AdminTrialsModal({ onClose }) {
+  const [list, setList] = useState(null);
+  const [f, setF] = useState({ email: '', kind: 'pro', days: 30, seats: 5, org: '', note: '' });
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState('');
+  const [notice, setNotice] = useState('');
+  const [custom, setCustom] = useState({});
+  const load = () => rpc('dl_admin_list_grants').then((l) => setList(l || [])).catch((e) => setError(e.message));
+  useEffect(() => { load(); }, []);
+  const act = async (fn, msg) => { setBusy(true); setError(''); setNotice(''); try { await fn(); await load(); if (msg) setNotice(msg); } catch (e) { setError(e.message); } finally { setBusy(false); } };
+  const set = (k, v) => setF((x) => ({ ...x, [k]: v }));
+  const grant = (e) => {
+    e.preventDefault();
+    const email = f.email.trim().toLowerCase();
+    act(async () => {
+      const r = await rpc('dl_admin_grant', { p_email: email, p_kind: f.kind, p_days: Number(f.days), p_seats: Number(f.seats), p_org_name: f.kind === 'empresa' ? f.org.trim() : null, p_note: f.note.trim() || null });
+      setF((x) => ({ ...x, email: '', org: '', note: '' }));
+      track('admin_prueba_asignada', { tipo: f.kind });
+      return r;
+    }, `Prueba de ${f.kind === 'pro' ? 'Pro' : 'Empresa'} asignada a ${email} por ${f.days} días. La persona la verá al recargar DataLite.`);
+  };
+  const adjust = (g, days) => act(() => rpc('dl_admin_adjust_grant', { p_id: g.id, p_days: days }), days > 0 ? `Prorrogada ${days} días.` : `Recortada ${-days} días.`);
+  const end = (g) => { if (confirm(`¿Terminar ya la prueba de ${g.email}?`)) act(() => rpc('dl_admin_end_grant', { p_id: g.id }), 'Prueba terminada.'); };
+
+  return (
+    <Modal title="Pruebas gratis asignadas" onClose={onClose} wide>
+      <div className="stack">
+        <p className="muted small">Solo tu cuenta de administrador puede ver esta ventana. La persona debe haber iniciado sesión en DataLite al menos una vez. Cada acción queda registrada.</p>
+        <form className="stack admin-form" onSubmit={grant}>
+          <div className="sched-grid">
+            <Field label="Correo de la persona"><input className="input" type="email" required value={f.email} onChange={(e) => set('email', e.target.value)} placeholder="persona@empresa.com" /></Field>
+            <Field label="Plan"><select value={f.kind} onChange={(e) => set('kind', e.target.value)}><option value="pro">Pro</option><option value="empresa">Empresa</option></select></Field>
+            <Field label="Días (15 a 30)"><input className="input" type="number" min="15" max="30" required value={f.days} onChange={(e) => set('days', e.target.value)} /></Field>
+          </div>
+          {f.kind === 'empresa' && (
+            <div className="sched-grid">
+              <Field label="Nombre de la empresa"><input className="input" required minLength={2} maxLength={120} value={f.org} onChange={(e) => set('org', e.target.value)} /></Field>
+              <Field label="Cupos (5 a 20)"><input className="input" type="number" min="5" max="20" required value={f.seats} onChange={(e) => set('seats', e.target.value)} /></Field>
+            </div>
+          )}
+          <Field label="Nota interna (opcional)"><input className="input" maxLength={300} value={f.note} onChange={(e) => set('note', e.target.value)} placeholder="Ej.: demo para gerencia, referido por…" /></Field>
+          <div><button type="submit" className="btn btn-primary" disabled={busy}>{busy ? 'Guardando…' : 'Asignar prueba'}</button></div>
+        </form>
+        {error && <p className="error" role="alert">{error}</p>}
+        {notice && <p className="callout-sm" role="status">{notice}</p>}
+        <h3 className="proj-h">Asignadas</h3>
+        {list === null ? <p className="muted">Cargando…</p> : list.length === 0 ? <p className="muted">Aún no has asignado pruebas.</p> : (
+          <ul className="sched-list">
+            {list.map((g) => (
+              <li key={g.id} className={g.active ? '' : 'off'}>
+                <span className={`sched-kind ${g.kind === 'empresa' ? 'alert' : ''}`}>{g.kind === 'pro' ? 'Pro' : 'Empresa'}</span>
+                <div className="sched-info">
+                  <b>{g.email}</b>
+                  <span className="muted small">{STATE(g)} · {g.active ? 'vence' : 'terminó'} el {fmtDate(g.ends_at)}{g.org ? ` · ${g.org.name} (${g.org.used} de ${g.org.seats} cupos)` : ''}</span>
+                  {g.note && <span className="muted small">{g.note}</span>}
+                </div>
+                {!(g.kind === 'empresa' && g.paid) && (
+                  <div className="sched-acts">
+                    <button type="button" className="btn btn-ghost btn-sm" disabled={busy} onClick={() => adjust(g, 7)}>+7 días</button>
+                    <button type="button" className="btn btn-ghost btn-sm" disabled={busy} onClick={() => adjust(g, 15)}>+15</button>
+                    {g.active && <button type="button" className="btn btn-ghost btn-sm" disabled={busy} onClick={() => adjust(g, -7)}>−7</button>}
+                    <input className="input admin-days" type="number" aria-label={`Días para ${g.email}`} placeholder="± días" value={custom[g.id] || ''} onChange={(e) => setCustom((c) => ({ ...c, [g.id]: e.target.value }))} />
+                    <button type="button" className="btn btn-ghost btn-sm" disabled={busy || !Number(custom[g.id])} onClick={() => { adjust(g, Number(custom[g.id])); setCustom((c) => ({ ...c, [g.id]: '' })); }}>Aplicar</button>
+                    {g.active && <button type="button" className="btn btn-ghost btn-sm" disabled={busy} onClick={() => end(g)}>Terminar</button>}
+                  </div>
+                )}
+              </li>
+            ))}
+          </ul>
+        )}
+        <p className="muted small">Prorrogar suma días a la fecha de fin (si ya terminó, cuenta desde hoy). Recortar resta días; si llega a hoy, la prueba termina. Una prueba no puede durar más de un año en total. Las pruebas de Empresa que ya pagaron se manejan con su plan normal.</p>
       </div>
     </Modal>
   );

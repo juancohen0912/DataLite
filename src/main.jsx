@@ -5,7 +5,7 @@ import { SAMPLES, makeSample } from './lib/samples.js';
 import { Dashboard } from './app/Dashboard.jsx';
 import { track, useToast } from './app/ui.jsx';
 import { ScheduleModal } from './app/Schedules.jsx';
-import { AccountSlot, LoginModal, ConsentModal, ProModal, NameModal, ProjectsModal, ShareModal, PaymentResult, EmpresaModal } from './app/Cloud.jsx';
+import { AccountSlot, LoginModal, ConsentModal, ProModal, NameModal, ProjectsModal, ShareModal, PaymentResult, EmpresaModal, AdminTrialsModal } from './app/Cloud.jsx';
 import { ConnectButtons, MicrosoftFilesModal } from './app/Connect.jsx';
 import { TemplateList, TemplateModal } from './app/Templates.jsx';
 import { templateState, templateAoa } from './app/templates.js';
@@ -402,7 +402,7 @@ function App() {
           ? <Dashboard key={ds.key} ds={ds} initial={initial} cloud={cloud} onRefresh={cloudOn ? onRefresh : null} onReset={() => { setDs(null); setProject(null); setInitial(null); history.replaceState(null, '', '/'); }} onSheet={(i) => { try { load(ds.fileName, ds.sheets, i, ds.source); } catch (e) { alert(e.message); } }} />
           : <Dropzone onFile={onFile} onSample={onSample} onTemplate={(tpl) => setModal({ type: 'template', tpl })} onConnect={cloudOn ? onConnect : null} locked={!account.status?.pro} busy={busy} error={error} />}
 
-      {cloudOn && <AccountSlot account={account} onLogin={() => setModal({ type: 'login' })} onOpenProjects={openProjects} onEmpresa={() => openEmpresa.current()} onPro={async () => { if (await gate('account', 'Inicia sesión para activar DataLite Pro.')) setModal({ type: 'pro' }); }} onSignOut={async () => { await signOut(); setAccount({ session: null, status: null }); showToast('Cerraste sesión.'); }} />}
+      {cloudOn && <AccountSlot account={account} onAdmin={() => setModal({ type: 'admin' })} onLogin={() => setModal({ type: 'login' })} onOpenProjects={openProjects} onEmpresa={() => openEmpresa.current()} onPro={async () => { if (await gate('account', 'Inicia sesión para activar DataLite Pro.')) setModal({ type: 'pro' }); }} onSignOut={async () => { await signOut(); setAccount({ session: null, status: null }); showToast('Cerraste sesión.'); }} />}
       {modal?.type === 'login' && <LoginModal reason={modal.reason} onClose={() => setModal(null)} />}
       {modal?.type === 'consent' && <ConsentModal onClose={() => setModal(null)} onDone={async () => { const st = await refreshAccount(); const then = pending.current; pending.current = null; setModal(modal.level === 'pro' && !st?.pro ? { type: 'pro', reason: modal.reason } : null); then?.(); }} />}
       {modal?.type === 'pro' && <ProModal reason={modal.reason} account={account} onTrial={onTrial} onClose={() => setModal(null)} />}
@@ -412,6 +412,7 @@ function App() {
       {modal?.type === 'template' && <TemplateModal tpl={modal.tpl} onUse={onUseTemplate} onClose={() => setModal(null)} />}
       {modal?.type === 'msfiles' && <MicrosoftFilesModal onPick={(f) => loadSource(f)} onClose={() => setModal(null)} />}
       {modal?.type === 'schedule' && project && <ScheduleModal project={project} columns={modal.columns} measures={modal.measures} source={modal.source} ownerEmail={account.status?.email} onClose={() => setModal(null)} />}
+      {modal?.type === 'admin' && account.status?.admin && <AdminTrialsModal onClose={() => { setModal(null); refreshAccount(); }} />}
       {modal?.type === 'share' && <ShareModal project={modal.project} account={account} onClose={() => { setModal(null); refreshAccount(); }} />}
       {toast}
     </div>
