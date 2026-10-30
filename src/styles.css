@@ -567,3 +567,5 @@ body.modal-open { overflow: hidden; }
 .sched .row-gap { display: flex; gap: 8px; flex-wrap: wrap; }
 .sched .check { display: inline-flex; gap: 6px; align-items: center; }
 @media (max-width: 640px) { .sched-list li, .sched-conn { flex-direction: column; align-items: stretch; } .sched-acts { justify-content: flex-start; } }
+
+.admin-days { width: 84px; padding: 6px 8px; font-size: 14px; }
